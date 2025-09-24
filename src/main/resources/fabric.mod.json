@@ -1,0 +1,37 @@
+{
+	"schemaVersion": 1,
+	"id": "more_gun",
+	"version": "${version}",
+	"name": "Create: More Gun",
+	"description": "How am I going to stop some mean mother Hubbard from tearing me a structurally superfluous be-hind? The answer, use a gun, and if that don't work... Use more gun",
+	"authors": [
+		"Tomeoprod"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/more_gun/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+          "net.tomeoprod.more_gun.MoreGun"
+		],
+		"client": [
+          "net.tomeoprod.more_gun.MoreGunClient"
+		]
+	},
+	"mixins": [
+		"more_gun.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.17.2",
+		"minecraft": "~1.20.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
