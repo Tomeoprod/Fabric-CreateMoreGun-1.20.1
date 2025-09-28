@@ -7,7 +7,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
 import net.tomeoprod.more_gun.MoreGun;
 
-public class ModTags {
+public class MGTags {
     public static class Blocks {
         //public static final TagKey<Block> <TAG NAME> = createTag("<TAG ID>");
 

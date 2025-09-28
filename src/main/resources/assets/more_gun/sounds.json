@@ -1,0 +1,113 @@
+{
+  "sentry_deploy": {
+    "subtitle": "sound.more_gun.sentry_deploy",
+    "sounds": [
+      "more_gun:sentry_deploy"
+    ]
+  },
+
+  "sentry_explode": {
+    "subtitle": "sound.more_gun.sentry_explode",
+    "sounds": [
+      "more_gun:sentry_explode"
+    ]
+  },
+
+  "sentry_hurt_1": {
+    "subtitle": "sound.more_gun.sentry_hurt",
+    "sounds": [
+      "more_gun:sentry_hurt_1"
+    ]
+  },
+
+  "sentry_hurt_2": {
+    "subtitle": "sound.more_gun.sentry_hurt",
+    "sounds": [
+      "more_gun:sentry_hurt_2"
+    ]
+  },
+
+  "sentry_hurt_3": {
+    "subtitle": "sound.more_gun.sentry_hurt",
+    "sounds": [
+      "more_gun:sentry_hurt_3"
+    ]
+  },
+
+  "sentry_hurt_4": {
+    "subtitle": "sound.more_gun.sentry_hurt",
+    "sounds": [
+      "more_gun:sentry_hurt_4"
+    ]
+  },
+
+  "sentry_scan_1": {
+    "subtitle": "sound.more_gun.sentry_scan",
+    "sounds": [
+      "more_gun:sentry_scan_1"
+    ]
+  },
+
+  "sentry_scan_2": {
+    "subtitle": "sound.more_gun.sentry_scan",
+    "sounds": [
+      "more_gun:sentry_scan_2"
+    ]
+  },
+
+  "sentry_scan_3": {
+    "subtitle": "sound.more_gun.sentry_scan",
+    "sounds": [
+      "more_gun:sentry_scan_3"
+    ]
+  },
+
+  "sentry_shoot_1": {
+    "subtitle": "sound.more_gun.sentry_shoot",
+    "sounds": [
+      "more_gun:sentry_shoot_1"
+    ]
+  },
+
+  "sentry_shoot_2": {
+    "subtitle": "sound.more_gun.sentry_shoot",
+    "sounds": [
+      "more_gun:sentry_shoot_2"
+    ]
+  },
+
+  "sentry_shoot_3": {
+    "subtitle": "sound.more_gun.sentry_shoot",
+    "sounds": [
+      "more_gun:sentry_shoot_3"
+    ]
+  },
+
+  "sentry_shoot_empty": {
+    "subtitle": "sound.more_gun.sentry_shoot_empty",
+    "sounds": [
+      "more_gun:sentry_shoot_empty"
+    ]
+  },
+
+  "sentry_shoot_rocket": {
+    "subtitle": "sound.more_gun.sentry_shoot_rocket",
+    "sounds": [
+      "more_gun:sentry_shoot_rocket"
+    ]
+  },
+
+  "sentry_spot_1": {
+    "subtitle": "sound.more_gun.sentry_spot",
+    "sounds": [
+      "more_gun:sentry_spot_1"
+    ]
+  },
+
+  "sentry_spot_2": {
+    "subtitle": "sound.more_gun.sentry_spot",
+    "sounds": [
+      "more_gun:sentry_spot_2"
+    ]
+  }
+}

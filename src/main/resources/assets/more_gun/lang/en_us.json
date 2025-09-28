@@ -1,0 +1,23 @@
+{
+  "item.more_gun.building_box": "Building Box",
+  "item.more_gun.incomplete_building_box": "Incomplete Building Box",
+
+  "itemgroup.more_gun.more_gun_item_group": "Create:More Gun",
+
+  "sound.more_gun.sentry_deploy": "Sentry deploying",
+
+  "sound.more_gun.sentry_explode": "Sentry exploding",
+
+  "sound.more_gun.sentry_hurt": "Sentry damaged",
+
+  "sound.more_gun.sentry_scan": "Sentry scanning",
+
+  "sound.more_gun.sentry_shoot": "Sentry shooting",
+
+  "sound.more_gun.sentry_shoot_empty": "Sentry out of ammo",
+
+  "sound.more_gun.sentry_shoot_rocket": "Sentry shooting rockets",
+
+  "sound.more_gun.sentry_spot": "Sentry detected an enemy"
+
+}

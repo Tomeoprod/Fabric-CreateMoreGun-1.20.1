@@ -1,15 +1,16 @@
 package net.tomeoprod.more_gun.Item;
 
+import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.Item;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
+import net.tomeoprod.more_gun.Item.custom.BuildingBoxItem;
 import net.tomeoprod.more_gun.MoreGun;
 
-import java.util.function.Function;
-
-public class ModItems {
-    //public static final Item <NAME> = registerItem("id", new Item(new FabricItemSettings()));
+public class MGItems {
+    public static final Item BUILDING_BOX = registerItem("building_box", new BuildingBoxItem(new FabricItemSettings().maxCount(1)));
+    public static final Item INCOMPLETE_BUILDING_BOX = registerItem("incomplete_building_box", new Item(new FabricItemSettings().maxCount(1)));
 
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, new Identifier(MoreGun.MOD_ID, name), item);

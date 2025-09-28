@@ -1,0 +1,14 @@
+{
+  "type": "create:cutting",
+  "ingredients": [
+    {
+      "item": "create:brass_casing"
+    }
+  ],
+  "processingTime":400,
+  "results": [
+    {
+      "item": "more_gun:building_box"
+    }
+  ]
+}
