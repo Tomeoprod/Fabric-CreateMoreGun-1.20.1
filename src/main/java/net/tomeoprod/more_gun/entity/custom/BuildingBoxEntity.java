@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Random;
 
 public class BuildingBoxEntity extends MobEntity {
+    public boolean ponderEntity = false;
     public Entity target;
     private boolean oddTick = false;
     public final AnimationState deployAnimationState = new AnimationState();
@@ -187,25 +188,27 @@ public class BuildingBoxEntity extends MobEntity {
     }
 
     public void setupAnimationStates() {
-        if (this.getDeploying()){
-            if (!this.deployAnimationState.isRunning() && !getDeployed()) {
-                this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_DEPLOYING, SoundCategory.NEUTRAL, 0.5f, 1f, true);
-                for (int i = 0; i < 25; i++) {
-                    this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
+        if (!this.ponderEntity) {
+            if (this.getDeploying()) {
+                if (!this.deployAnimationState.isRunning() && !getDeployed()) {
+                    this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_DEPLOYING, SoundCategory.NEUTRAL, 0.5f, 1f, true);
+                    for (int i = 0; i < 25; i++) {
+                        this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
+                    }
                 }
+                this.deployAnimationState.startIfNotRunning(this.age);
             }
-            this.deployAnimationState.startIfNotRunning(this.age);
-        }
 
-        if (this.deployAnimationState.getTimeRunning() >= 6300) {
-            setDeployed(true);
-            setSearching(this.getDeployed() && this.target == null);
-            setDeploying(false);
-        }
+            if (this.deployAnimationState.getTimeRunning() >= 6300) {
+                setDeployed(true);
+                setSearching(this.getDeployed() && this.target == null);
+                setDeploying(false);
+            }
 
-        if (this.getSearching()) {
-            this.searchAnimationState.startIfNotRunning(this.age);
-        } else this.searchAnimationState.stop();
+            if (this.getSearching()) {
+                this.searchAnimationState.startIfNotRunning(this.age);
+            } else this.searchAnimationState.stop();
+        }
     }
 
     @Override
@@ -237,12 +240,12 @@ public class BuildingBoxEntity extends MobEntity {
         World world = this.getWorld();
 
         Box box =  new Box(
-                this.getX() - 16,
-                this.getY() - 16,
-                this.getZ() - 16,
-                this.getX() + 16 ,
-                this.getY() + 16 ,
-                this.getZ() + 16
+                this.getX() - 20,
+                this.getY() - 20,
+                this.getZ() - 20,
+                this.getX() + 20,
+                this.getY() + 20,
+                this.getZ() + 20
         );
 
         List<HostileEntity> potentialTargets = world.getEntitiesByClass(HostileEntity.class, box, entity -> entity.isAlive());
@@ -333,7 +336,7 @@ public class BuildingBoxEntity extends MobEntity {
                     ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
                 }
             }
-        } else shootAnimationState.stop();
+        } else if (!this.ponderEntity) shootAnimationState.stop();
     }
 
     @Override

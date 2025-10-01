@@ -18,6 +18,11 @@
 
   "sound.more_gun.sentry_shoot_rocket": "Sentry shooting rockets",
 
-  "sound.more_gun.sentry_spot": "Sentry detected an enemy"
+  "sound.more_gun.sentry_spot": "Sentry detected an enemy",
 
+  "more_gun.ponder.sentry.header": "Sentry",
+  "more_gun.ponder.sentry.text_1": "This is a Building Box containing a Sentry",
+  "more_gun.ponder.sentry.text_2": "Hit it with a Wrench to deploy it",
+  "more_gun.ponder.sentry.text_3": "Once deployed, It will scan for targets in a 20 block radius",
+  "more_gun.ponder.sentry.text_4": "You can pick it up by right clicking it while sneaking with an empty hand"
 }

@@ -11,6 +11,7 @@ import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.particle.MGParticles;
+import net.tomeoprod.more_gun.ponder.MGPonderIndex;
 import net.tomeoprod.more_gun.sound.MGSounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,5 +29,6 @@ public class MoreGun implements ModInitializer {
         MGParticles.MainInit();
         MGMessages.registerC2SPackets();
         MGSounds.initialize();
+        MGPonderIndex.registerPonders();
 	}
 }
