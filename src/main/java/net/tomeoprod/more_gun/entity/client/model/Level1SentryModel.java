@@ -4,8 +4,6 @@ import net.minecraft.client.model.*;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.util.math.MathHelper;
-import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.entity.animation.Level1SentryAnimations;
 import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
 
@@ -81,11 +79,10 @@ public class Level1SentryModel<T extends BuildingBoxEntity> extends SinglePartEn
 	public void setAngles(BuildingBoxEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.getPart().traverse().forEach(ModelPart::resetTransform);
 
-        if (!entity.getDeploying() && !entity.getSearching() && entity.target != null) {
+        if (entity.getDeployed()) {
             this.setHeadAngles(netHeadYaw, headPitch, entity.getBuildingRotation());
         }
 
-        this.updateAnimation(entity.searchAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SEARCHING, ageInTicks, 1);
         if (!entity.getDeployed()) {
             this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, ageInTicks, 1f);
         } else this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, 12600, 1f);

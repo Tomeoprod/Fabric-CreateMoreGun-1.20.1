@@ -38,7 +38,6 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.Item.custom.BuildingBoxItem;
-import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.particle.MGParticles;
@@ -49,13 +48,10 @@ import java.util.List;
 import java.util.Random;
 
 public class BuildingBoxEntity extends MobEntity {
-    public boolean ponderEntity = false;
     public Entity target;
     private boolean oddTick = false;
     public final AnimationState deployAnimationState = new AnimationState();
-    public final AnimationState searchAnimationState = new AnimationState();
     public final AnimationState shootAnimationState = new AnimationState();
-    private static final TrackedData<Boolean> SEARCHING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Boolean> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Integer> OWNER_ID = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -97,7 +93,6 @@ public class BuildingBoxEntity extends MobEntity {
     protected void initDataTracker() {
         super.initDataTracker();
 
-        dataTracker.startTracking(SEARCHING, false);
         dataTracker.startTracking(DEPLOYED, false);
         dataTracker.startTracking(DEPLOYING, false);
         dataTracker.startTracking(OWNER_ID, 0);
@@ -108,7 +103,6 @@ public class BuildingBoxEntity extends MobEntity {
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putBoolean("more_gun.searching", getSearching());
         nbt.putBoolean("more_gun.deployed", getDeployed());
         nbt.putBoolean("more_gun.deploying", getDeploying());
         nbt.putInt("more_gun.ownerId", getOwnerId());
@@ -119,20 +113,12 @@ public class BuildingBoxEntity extends MobEntity {
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
-        if (nbt.contains("more_gun.searching")) setSearching(nbt.getBoolean("more_gun.searching"));
         if (nbt.contains("more_gun.deployed")) setDeployed(nbt.getBoolean("more_gun.deployed"));
         if (nbt.contains("more_gun.deploying")) setDeploying(nbt.getBoolean("more_gun.deploying"));
         if (nbt.contains("more_gun.ownerId")) setOwnerId(nbt.getInt("more_gun.ownerId"));
         if (nbt.contains("more_gun.buildingType")) setBuildingType(nbt.getString("more_gun.buildingType"));
         if (nbt.contains("more_gun.buildingLevel")) setBuildingLevel(nbt.getInt("more_gun.buildingLevel"));
         if (nbt.contains("more_gun.buildingRotation")) setBuildingRotation(nbt.getFloat("more_gun.buildingRotation"));
-    }
-
-    public void setSearching(boolean searching) {
-        dataTracker.set(SEARCHING, searching);
-    }
-    public boolean getSearching() {
-        return dataTracker.get(SEARCHING);
     }
 
     public void setDeployed(boolean deployed) {
@@ -188,27 +174,21 @@ public class BuildingBoxEntity extends MobEntity {
     }
 
     public void setupAnimationStates() {
-        if (!this.ponderEntity) {
-            if (this.getDeploying()) {
-                if (!this.deployAnimationState.isRunning() && !getDeployed()) {
-                    this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_DEPLOYING, SoundCategory.NEUTRAL, 0.5f, 1f, true);
-                    for (int i = 0; i < 25; i++) {
-                        this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
-                    }
+        if (this.getDeploying()) {
+            if (!this.deployAnimationState.isRunning() && !getDeployed()) {
+                this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_DEPLOYING, SoundCategory.NEUTRAL, 0.5f, 1f, true);
+                for (int i = 0; i < 25; i++) {
+                    this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
                 }
-                this.deployAnimationState.startIfNotRunning(this.age);
             }
-
-            if (this.deployAnimationState.getTimeRunning() >= 6300) {
-                setDeployed(true);
-                setSearching(this.getDeployed() && this.target == null);
-                setDeploying(false);
-            }
-
-            if (this.getSearching()) {
-                this.searchAnimationState.startIfNotRunning(this.age);
-            } else this.searchAnimationState.stop();
+            this.deployAnimationState.startIfNotRunning(this.age);
         }
+
+        if (this.deployAnimationState.getTimeRunning() >= 6300) {
+            setDeployed(true);
+            setDeploying(false);
+        }
+
     }
 
     @Override
@@ -226,12 +206,11 @@ public class BuildingBoxEntity extends MobEntity {
         IntList list = IntList.of(
                 this.getId(),
                 this.getDeployed() ? 1 : 0,
-                this.getDeployed() ? 1 : 0,
-                this.getSearching() ? 1 : 0
+                this.getDeployed() ? 1 : 0
         );
         passedData.writeIntList(list);
 
-        if (this.getWorld().isClient) {
+        if (this.getWorld().isClient && MGMessages.SET_DATA_TRACKERS_PACKET_ID != null) {
             ClientPlayNetworking.send(MGMessages.SET_DATA_TRACKERS_PACKET_ID, passedData);
         }
     }
@@ -248,7 +227,7 @@ public class BuildingBoxEntity extends MobEntity {
                 this.getZ() + 20
         );
 
-        List<HostileEntity> potentialTargets = world.getEntitiesByClass(HostileEntity.class, box, entity -> entity.isAlive());
+        List<HostileEntity> potentialTargets = world.getEntitiesByClass(HostileEntity.class, box, LivingEntity::isAlive);
         HostileEntity closet = null;
 
         for (HostileEntity target : potentialTargets) {
@@ -274,18 +253,36 @@ public class BuildingBoxEntity extends MobEntity {
     }
 
     public void calculateRotation() {
-        if (this.target != null) {
-            double dx = this.target.getX() - this.getX();
-            double dy = this.target.getBoundingBox().getCenter().y - this.getEyeY();
-            double dz = this.target.getZ() - this.getZ();
-            double horizontalDist = Math.sqrt(dx * dx + dz * dz);
+        if (this.getDeployed()) {
+            if (target != null) {
+                double dx = this.target.getX() - this.getX();
+                double dy = this.target.getBoundingBox().getCenter().y - this.getEyeY();
+                double dz = this.target.getZ() - this.getZ();
+                double horizontalDist = Math.sqrt(dx * dx + dz * dz);
 
-            float targetYaw = (float) (MathHelper.atan2(dz, dx) * (180.0 / Math.PI) - 90);
-            float targetPitch = Math.clamp((float) -(MathHelper.atan2(dy, horizontalDist) * (180.0 / Math.PI)), -35, 35);
+                float targetYaw = (float) (MathHelper.atan2(dz, dx) * (180.0 / Math.PI) - 90);
+                float targetPitch = Math.clamp((float) -(MathHelper.atan2(dy, horizontalDist) * (180.0 / Math.PI)), -35, 35);
 
-            this.setYaw(MathHelper.lerpAngleDegrees(0.2F, this.getYaw(),targetYaw));
-            this.setHeadYaw(MathHelper.lerpAngleDegrees(0.2F, this.getYaw(),targetYaw));
-            this.setPitch(MathHelper.lerp(0.2F, this.getPitch(), targetPitch));
+                this.setYaw(MathHelper.lerpAngleDegrees(0.2F, this.getYaw(), targetYaw));
+                this.setHeadYaw(MathHelper.lerpAngleDegrees(0.2F, this.getYaw(), targetYaw));
+                this.setPitch(MathHelper.lerp(0.2F, this.getPitch(), targetPitch));
+            } else {
+                boolean b1 = (Math.sin(this.age * 0.025)) >= 0;
+                double d1 = Math.toRadians(this.getBuildingRotation() + (45 * (b1 ? 1 : -1)));
+
+                float targetYaw = (float) (d1 * (180.0 / Math.PI));
+
+                this.setYaw(MathHelper.lerpAngleDegrees(0.025F, this.getYaw(), targetYaw));
+                this.setHeadYaw(MathHelper.lerpAngleDegrees(0.025F, this.getYaw(), targetYaw));
+                this.setPitch(MathHelper.lerp(0.025F, this.getPitch(), 0));
+            }
+        } else {
+            double d1 = Math.toRadians(this.getBuildingRotation());
+            float targetYaw = (float) (d1 * (180.0 / Math.PI));
+
+            this.setYaw(targetYaw);
+            this.setHeadYaw(targetYaw);
+            this.setPitch(0);
         }
     }
 
@@ -333,10 +330,12 @@ public class BuildingBoxEntity extends MobEntity {
                     passedData.writeInt(entity.getId());
                     passedData.writeVector3f(vec3d3.toVector3f());
 
-                    ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                    if (MGMessages.SHOOT_ENTITY_PACKET_ID != null) {
+                        ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                    }
                 }
             }
-        } else if (!this.ponderEntity) shootAnimationState.stop();
+        } else shootAnimationState.stop();
     }
 
     @Override
@@ -360,13 +359,8 @@ public class BuildingBoxEntity extends MobEntity {
 
     @Override
     public void onDamaged(DamageSource damageSource) {
-        MoreGun.LOGGER.info("-> attacker : " + damageSource.getAttacker());
         if (damageSource.getAttacker() instanceof PlayerEntity player) {
-            MoreGun.LOGGER.info("-> item : " + player.getMainHandStack().getItem());
-            MoreGun.LOGGER.info("-> deploying : " + getDeploying());
-            MoreGun.LOGGER.info("-> deployed : " + getDeployed());
             if (player.getMainHandStack().getItem() instanceof WrenchItem && !(this.getDeployed() || this.getDeploying())) {
-                MoreGun.LOGGER.info("-> worked");
                 this.setDeploying(true);
             }
         }

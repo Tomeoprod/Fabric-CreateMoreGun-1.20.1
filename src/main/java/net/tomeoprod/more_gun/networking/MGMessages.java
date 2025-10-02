@@ -19,39 +19,37 @@ public class MGMessages {
     public static final Identifier SET_DATA_TRACKERS_PACKET_ID = Identifier.of(MoreGun.MOD_ID, "set_data_trackers");
 
     public static void registerC2SPackets() {
-        ServerPlayNetworking.registerGlobalReceiver(SHOOT_ENTITY_PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) ->{
-            World world = serverPlayerEntity.getWorld();
-            Entity packetEntity = world.getEntityById(packetByteBuf.readInt());
-            Vector3f vec3d = packetByteBuf.readVector3f();
-            DamageSource damageSource = new DamageSource(
-                    world.getRegistryManager()
-                            .get(RegistryKeys.DAMAGE_TYPE)
-                            .entryOf(MoreGun.SHOT_DAMAGE));
+        if (SHOOT_ENTITY_PACKET_ID != null) {
+            ServerPlayNetworking.registerGlobalReceiver(SHOOT_ENTITY_PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
+                World world = serverPlayerEntity.getWorld();
+                Entity packetEntity = world.getEntityById(packetByteBuf.readInt());
+                Vector3f vec3d = packetByteBuf.readVector3f();
+                DamageSource damageSource = new DamageSource(
+                        world.getRegistryManager()
+                                .get(RegistryKeys.DAMAGE_TYPE)
+                                .entryOf(MoreGun.SHOT_DAMAGE));
 
-            if (packetEntity instanceof LivingEntity entity) {
-                entity.damage(damageSource, 0.5f);
-                double d = (double) 0.01F * ((double) 1.0F - entity.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE));
-                entity.addVelocity(vec3d.x * d, vec3d.y * d, vec3d.z * d);
-            }
-        }));
+                if (packetEntity instanceof LivingEntity entity) {
+                    entity.damage(damageSource, 0.5f);
+                    double d = (double) 0.01F * ((double) 1.0F - entity.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE));
+                    entity.addVelocity(vec3d.x * d, vec3d.y * d, vec3d.z * d);
+                }
+            }));
+        }
 
-        ServerPlayNetworking.registerGlobalReceiver(SET_DATA_TRACKERS_PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) ->{
-            ServerWorld world = serverPlayerEntity.getServerWorld();
-            IntList list = packetByteBuf.readIntList();
-            Entity packetEntity = world.getEntityById(list.getFirst());
-            Boolean deploying = list.getInt(1) == 1;
-            Boolean deployed = list.getInt(2) == 1;
-            Boolean searching = list.getInt(3) == 1;
-            MoreGun.LOGGER.info("-> type : " + packetEntity);
+        if (SET_DATA_TRACKERS_PACKET_ID != null) {
+            ServerPlayNetworking.registerGlobalReceiver(SET_DATA_TRACKERS_PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
+                ServerWorld world = serverPlayerEntity.getServerWorld();
+                IntList list = packetByteBuf.readIntList();
+                Entity packetEntity = world.getEntityById(list.getFirst());
+                boolean deploying = list.getInt(1) == 1;
+                boolean deployed = list.getInt(2) == 1;
 
-            if (packetEntity instanceof BuildingBoxEntity entity) {
-                entity.setDeploying(deploying);
-                entity.setDeployed(deployed);
-                entity.setSearching(searching);
-            }
-        }));
-    }
-
-    public static void registerS2CPackets() {
+                if (packetEntity instanceof BuildingBoxEntity entity) {
+                    entity.setDeploying(deploying);
+                    entity.setDeployed(deployed);
+                }
+            }));
+        }
     }
 }
