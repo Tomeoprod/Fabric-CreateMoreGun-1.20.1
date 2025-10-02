@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "more_gun",
 	"version": "${version}",
-	"name": "Create: More Gun",
+	"name": "Create:More Gun",
 	"description": "How am I going to stop some mean mother Hubbard from tearing me a structurally superfluous be-hind? The answer, use a gun, and if that don't work... Use more gun",
 	"authors": [
 		"Tomeoprod"
@@ -29,9 +29,10 @@
 		"fabricloader": ">=0.17.2",
 		"minecraft": "~1.20.1",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+        "create-fabric": "*"
 	},
 	"suggests": {
-		"another-mod": "*"
+		"jei": "*"
 	}
 }
