@@ -45,7 +45,7 @@ public class BuildingBoxItem extends Item {
             return ActionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return super.useOnBlock(context);
     }
 
     public static void setBuildingProperties(ItemStack stack, String type, int level) {

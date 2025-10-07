@@ -49,7 +49,7 @@ import java.util.Random;
 
 public class BuildingBoxEntity extends MobEntity {
     public Entity target;
-    private boolean oddTick = false;
+    private boolean canShoot = false;
     public final AnimationState deployAnimationState = new AnimationState();
     public final AnimationState shootAnimationState = new AnimationState();
     private static final TrackedData<Boolean> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -194,7 +194,8 @@ public class BuildingBoxEntity extends MobEntity {
     @Override
     public void tick() {
         super.tick();
-        oddTick = !oddTick;
+
+        canShoot = this.age % 5 == 0;
 
         this.setupAnimationStates();
         this.calculateDimensions();
@@ -289,12 +290,12 @@ public class BuildingBoxEntity extends MobEntity {
     public void shootTarget() {
         World world = this.getWorld();
 
-        if (target != null && getDeployed() && oddTick) {
-            Vec3d vec3d2 = this.getEyePos().add(this.getRotationVec(1.0F).multiply(20)).subtract(this.getPos());
+        if (target != null && getDeployed() && canShoot) {
+            Vec3d vec3d2 = target.getBoundingBox().getCenter().subtract(this.getEyePos());
             Vec3d vec3d3 = vec3d2.normalize();
             List<LivingEntity> potentialTargets = new ArrayList<>();
 
-            for (int i = 1; i <= 16; i++) {
+            for (int i = 1; i <= vec3d2.length() + 1; i++) {
                 Vec3d vec3d4 = this.getPos().add(vec3d3.multiply(i));
                 Box box = new Box(
                         vec3d4.x + 0.5,
@@ -304,7 +305,7 @@ public class BuildingBoxEntity extends MobEntity {
                         vec3d4.y - 0.5,
                         vec3d4.z - 0.5
                 );
-                List<LivingEntity> temp = world.getEntitiesByClass(LivingEntity.class, box, entity -> !(entity instanceof BuildingBoxEntity) && entity != world.getEntityById(getOwnerId()));
+                List<LivingEntity> temp = world.getEntitiesByClass(LivingEntity.class, box, entity -> !(entity instanceof BuildingBoxEntity));
 
                 potentialTargets.addAll(temp);
             }
@@ -314,24 +315,23 @@ public class BuildingBoxEntity extends MobEntity {
                 Vec3d particleSpawnPos = this.getEyePos().add(this.getRotationVec(1.0F).multiply(0.65));
                 world.addImportantParticle(
                         (ParticleEffect) MGParticles.MUZZLE_FLASH_PARTICLE,
-                        particleSpawnPos.x + new Random().nextFloat(-0.05f, 0.05f),
-                        particleSpawnPos.y + 0.1 + new Random().nextFloat(-0.05f, 0.05f),
-                        particleSpawnPos.z + new Random().nextFloat(-0.05f, 0.05f),
+                        particleSpawnPos.x,
+                        particleSpawnPos.y + 0.1,
+                        particleSpawnPos.z,
                         0,
                         0,
                         0
                 );
                 world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_1, SoundCategory.NEUTRAL, 0.1f, 1f, true);
-            }
+                for (LivingEntity entity : potentialTargets) {
+                    if (entity.canTakeDamage()) {
+                        PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                        passedData.writeInt(entity.getId());
+                        passedData.writeVector3f(vec3d3.toVector3f());
 
-            for (LivingEntity entity : potentialTargets) {
-                if (entity.canTakeDamage()) {
-                    PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-                    passedData.writeInt(entity.getId());
-                    passedData.writeVector3f(vec3d3.toVector3f());
-
-                    if (MGMessages.SHOOT_ENTITY_PACKET_ID != null) {
-                        ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                        if (this.getWorld().isClient && MGMessages.SHOOT_ENTITY_PACKET_ID != null) {
+                            ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                        }
                     }
                 }
             }

@@ -15,9 +15,9 @@ public class MuzzleFlashParticle extends AnimatedParticle {
         this.velocityX = 0;
         this.velocityY = 0;
         this.velocityZ = 0;
-        this.angle = new Random().nextFloat(-45f, 45f);
+        this.angle = new Random().nextFloat(-10f, 10f);
         this.scale *= 1.15F;
-        this.maxAge = 2 + this.random.nextInt(6);
+        this.maxAge = 1 + this.random.nextInt(2);
         this.setTargetColor(15916745);
         this.setSpriteForAge(spriteProvider);
     }

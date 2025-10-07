@@ -12,10 +12,10 @@ import net.tomeoprod.more_gun.MoreGun;
 
 public class MGItemGroups {
 
-    public static final ItemGroup MORE_GUN_ITEM_GROUP = Registry.register(Registries.ITEM_GROUP, Identifier.of(MoreGun.MOD_ID, "more_gun"), FabricItemGroup.builder().icon(() -> new ItemStack(MGItems.BUILDING_BOX))
+    public static final ItemGroup MORE_GUN_ITEM_GROUP = Registry.register(Registries.ITEM_GROUP, Identifier.of(MoreGun.MOD_ID, "more_gun"), FabricItemGroup.builder().icon(() -> new ItemStack(MGItems.EMPTY_BUILDING_BOX))
             .displayName(Text.translatable("itemgroup.more_gun.more_gun_item_group"))
             .entries((displayContext, entries) -> {
-                entries.add(MGItems.BUILDING_BOX);
+                entries.add(MGItems.EMPTY_BUILDING_BOX);
 
                 ItemStack sentryBox = new ItemStack(MGItems.BUILDING_BOX);
                 BuildingBoxItem.setBuildingProperties(sentryBox, "Sentry", 1);

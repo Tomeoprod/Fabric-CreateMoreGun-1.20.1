@@ -1,6 +1,6 @@
 {
   "item.more_gun.building_box": "Building Box",
-  "item.more_gun.incomplete_building_box": "Incomplete Building Box",
+  "item.more_gun.empty_building_box": "Empty Building Box",
 
   "itemgroup.more_gun.more_gun_item_group": "Create:More Gun",
 
@@ -24,5 +24,9 @@
   "more_gun.ponder.sentry.text_1": "This is a Building Box containing a Sentry",
   "more_gun.ponder.sentry.text_2": "Hit it with a Wrench to deploy it",
   "more_gun.ponder.sentry.text_3": "Once deployed, It will scan for targets in a 20 block radius",
-  "more_gun.ponder.sentry.text_4": "You can pick it up by right clicking it while sneaking with an empty hand"
+  "more_gun.ponder.sentry.text_4": "You can pick it up by right clicking it while sneaking with an empty hand",
+
+  "death.attack.shot": "%s was shot",
+  "death.attack.shot.item": "%s was shot by %s using %s",
+  "death.attack.shot.player": "%s was shot whilst trying to escape %s"
 }

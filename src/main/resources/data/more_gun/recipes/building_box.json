@@ -1,0 +1,32 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IEI",
+    "PBP",
+    "ILI"
+  ],
+  "key": {
+    "I": {
+      "item": "create:brass_ingot"
+    },
+    "E": {
+      "item": "create:electron_tube"
+    },
+    "B": {
+      "item": "more_gun:empty_building_box"
+    },
+    "P": {
+      "item": "create:precision_mechanism"
+    },
+    "L": {
+      "item": "create:redstone_link"
+    }
+  },
+  "result": {
+    "item": "more_gun:building_box",
+    "nbt": {
+      "more_gun.building_type": "Sentry",
+      "more_gun.building_level": 1
+    }
+  }
+}

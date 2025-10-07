@@ -10,7 +10,7 @@ import net.tomeoprod.more_gun.MoreGun;
 
 public class MGItems {
     public static final Item BUILDING_BOX = registerItem("building_box", new BuildingBoxItem(new FabricItemSettings().maxCount(1)));
-    public static final Item INCOMPLETE_BUILDING_BOX = registerItem("incomplete_building_box", new Item(new FabricItemSettings().maxCount(1)));
+    public static final Item EMPTY_BUILDING_BOX = registerItem("empty_building_box", new Item(new FabricItemSettings().maxCount(1)));
 
     private static Item registerItem(String name, Item item) {
         return Registry.register(Registries.ITEM, new Identifier(MoreGun.MOD_ID, name), item);
