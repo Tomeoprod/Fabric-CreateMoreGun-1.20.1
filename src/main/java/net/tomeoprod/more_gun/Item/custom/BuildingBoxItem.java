@@ -7,6 +7,9 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Direction;
@@ -15,6 +18,7 @@ import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Random;
 
 public class BuildingBoxItem extends Item {
     public BuildingBoxItem(Settings settings) {
@@ -38,6 +42,7 @@ public class BuildingBoxItem extends Item {
             entity.setBuildingRotation(player.getHeadYaw());
 
             world.spawnEntity(entity);
+            world.playSoundAtBlockCenter(entity.getBlockPos(), SoundEvents.BLOCK_ANVIL_PLACE, SoundCategory.PLAYERS, 0.5F, 1F, true);
 
             if (!player.isCreative()) {
                 stack.decrement(1);

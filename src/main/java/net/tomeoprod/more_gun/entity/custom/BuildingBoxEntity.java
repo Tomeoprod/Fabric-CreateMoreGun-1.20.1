@@ -18,14 +18,19 @@ import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ParticleEffect;
+import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -38,10 +43,12 @@ import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.Item.custom.BuildingBoxItem;
+import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.particle.MGParticles;
 import net.tomeoprod.more_gun.sound.MGSounds;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -358,12 +365,36 @@ public class BuildingBoxEntity extends MobEntity {
     }
 
     @Override
-    public void onDamaged(DamageSource damageSource) {
-        if (damageSource.getAttacker() instanceof PlayerEntity player) {
-            if (player.getMainHandStack().getItem() instanceof WrenchItem && !(this.getDeployed() || this.getDeploying())) {
-                this.setDeploying(true);
+    public boolean damage(DamageSource source, float amount) {
+        Entity attacker = source.getAttacker();
+
+        if (attacker instanceof PlayerEntity player) {
+            if (player.getMainHandStack().getItem() instanceof WrenchItem ) {
+                if (!(this.getDeployed() || this.getDeploying())) {
+                    this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.PLAYERS, 0.5F, 1F, true);
+                    this.setDeploying(true);
+                    return false;
+                } else if (player.getInventory().contains(Items.IRON_INGOT.getDefaultStack())) {
+                    int healAmount = 5;
+
+                    if (player.isSneaking()) {
+                        if (player.getInventory().count(Items.IRON_INGOT) > 5) {
+                            healAmount = 25;
+                        } else healAmount = player.getInventory().count(Items.IRON_INGOT);
+                    }
+
+                    this.heal(healAmount);
+                    if (!player.isCreative()) {
+                        player.getInventory().getStack(
+                                player.getInventory().indexOf(Items.IRON_INGOT.getDefaultStack())
+                        ).decrement(healAmount / 5);
+                    }
+                    return false;
+                }
             }
         }
+
+        return super.damage(source, amount);
     }
 
     @Override
@@ -374,5 +405,29 @@ public class BuildingBoxEntity extends MobEntity {
     @Override
     public Packet<ClientPlayPacketListener> createSpawnPacket() {
         return new EntitySpawnS2CPacket(this);
+    }
+
+    @Override
+    protected @Nullable SoundEvent getHurtSound(DamageSource source) {
+        return switch (new Random().nextInt(4)) {
+            case 1 -> MGSounds.SENTRY_HURT_1;
+
+            case 2 -> MGSounds.SENTRY_HURT_2;
+
+            case 3 -> MGSounds.SENTRY_HURT_3;
+
+            default -> MGSounds.SENTRY_HURT_4;
+        };
+    }
+
+    @Override
+    protected @Nullable SoundEvent getDeathSound() {
+        return MGSounds.SENTRY_EXPLODE;
+    }
+
+    @Override
+    public void onDeath(DamageSource damageSource) {
+        this.getWorld().addImportantParticle(ParticleTypes.EXPLOSION_EMITTER, true, this.getX(), this.getY(), this.getZ(), 0, 0 ,0);
+        this.discard();
     }
 }

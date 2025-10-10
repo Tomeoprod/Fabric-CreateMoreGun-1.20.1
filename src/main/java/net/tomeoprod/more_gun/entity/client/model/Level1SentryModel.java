@@ -87,7 +87,7 @@ public class Level1SentryModel<T extends BuildingBoxEntity> extends SinglePartEn
             this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, ageInTicks, 1f);
         } else this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, 12600, 1f);
 
-        this.updateAnimation(entity.shootAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SHOOT, ageInTicks, 2);
+        this.updateAnimation(entity.shootAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SHOOT, ageInTicks, 1);
     }
 
     private void setHeadAngles(float headYaw, float headPitch, float rotationOffset) {
