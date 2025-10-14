@@ -8,11 +8,13 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.util.Identifier;
 import net.tomeoprod.more_gun.Item.MGItemGroups;
 import net.tomeoprod.more_gun.Item.MGItems;
+import net.tomeoprod.more_gun.block.MGBlocks;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.particle.MGParticles;
 import net.tomeoprod.more_gun.ponder.MGPonderIndex;
 import net.tomeoprod.more_gun.sound.MGSounds;
+import net.tomeoprod.more_gun.world.MGOreGeneration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,11 +26,13 @@ public class MoreGun implements ModInitializer {
 	@Override
 	public void onInitialize() {
         MGItems.initialize();
+        MGBlocks.initialize();
         MGItemGroups.registerModItemGroups();
         MGEntities.registerModEntities();
         MGParticles.MainInit();
         MGMessages.registerC2SPackets();
         MGSounds.initialize();
         MGPonderIndex.registerPonders();
+        MGOreGeneration.generateOres();
 	}
 }
