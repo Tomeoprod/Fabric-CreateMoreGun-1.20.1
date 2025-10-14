@@ -43,7 +43,7 @@ public class MGMessages {
                 IntList list = packetByteBuf.readIntList();
                 Entity packetEntity = world.getEntityById(list.getFirst());
                 boolean deploying = list.getInt(1) == 1;
-                boolean deployed = list.getInt(2) == 1;
+                int deployed = list.getInt(2);
 
                 if (packetEntity instanceof BuildingBoxEntity entity) {
                     entity.setDeploying(deploying);

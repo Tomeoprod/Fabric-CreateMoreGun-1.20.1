@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    " S ",
+    " T ",
+    " B "
+  ],
+  "key": {
+    "S": {
+      "item": "create:steam_engine"
+    },
+    "T": {
+      "item": "create:fluid_tank"
+    },
+    "B": {
+      "item": "create:blaze_burner"
+    }
+  },
+  "result": {
+    "item": "more_gun:steam_engine_module"
+  }
+}

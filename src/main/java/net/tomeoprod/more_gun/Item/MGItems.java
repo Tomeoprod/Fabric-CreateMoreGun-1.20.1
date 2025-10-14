@@ -9,6 +9,7 @@ import net.tomeoprod.more_gun.Item.custom.BuildingBoxItem;
 import net.tomeoprod.more_gun.MoreGun;
 
 public class MGItems {
+    public static final Item STEAM_ENGINE_MODULE = registerItem("steam_engine_module", new Item(new FabricItemSettings()));
     public static final Item BUILDING_BOX = registerItem("building_box", new BuildingBoxItem(new FabricItemSettings().maxCount(1)));
     public static final Item EMPTY_BUILDING_BOX = registerItem("empty_building_box", new Item(new FabricItemSettings().maxCount(1)));
 

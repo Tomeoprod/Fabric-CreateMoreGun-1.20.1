@@ -4,6 +4,7 @@ import com.simibubi.create.foundation.ponder.*;
 import com.simibubi.create.foundation.ponder.element.EntityElement;
 import com.simibubi.create.foundation.ponder.element.InputWindowElement;
 import com.simibubi.create.foundation.utility.Pointing;
+import net.minecraft.item.Items;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
 
@@ -39,6 +40,11 @@ public class BuildingScenes {
         scene.overlay.showText(60).pointAt(util.vector.centerOf(2, 1, 2)).text("Once deployed, It will scan for targets in a 20 block radius").attachKeyFrame();
 
         scene.idle(80);
+
+        scene.overlay.showText(80).pointAt(util.vector.centerOf(2, 1, 2)).text("You can repair it by hitting it with a wrench and with brass ingots in you're inventory").attachKeyFrame();
+        scene.overlay.showControls(new InputWindowElement(util.vector.topOf(2, 1, 2), Pointing.DOWN).leftClick().withWrench(), 40);
+
+        scene.idle(100);
 
         scene.overlay.showText(80).pointAt(util.vector.centerOf(2, 1, 2)).text("You can pick it up by right clicking it while sneaking with an empty hand").attachKeyFrame();
         scene.overlay.showControls(new InputWindowElement(util.vector.topOf(2, 1, 2), Pointing.DOWN).whileSneaking().rightClick(), 20);

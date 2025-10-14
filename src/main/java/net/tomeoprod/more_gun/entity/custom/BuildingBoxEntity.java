@@ -1,9 +1,11 @@
 package net.tomeoprod.more_gun.entity.custom;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.equipment.wrench.WrenchItem;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.block.Blocks;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -24,6 +26,7 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
+import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleEffect;
 import net.minecraft.particle.ParticleType;
 import net.minecraft.particle.ParticleTypes;
@@ -59,7 +62,7 @@ public class BuildingBoxEntity extends MobEntity {
     private boolean canShoot = false;
     public final AnimationState deployAnimationState = new AnimationState();
     public final AnimationState shootAnimationState = new AnimationState();
-    private static final TrackedData<Boolean> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
+    private static final TrackedData<Integer> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final TrackedData<Integer> OWNER_ID = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<String> BUILDING_TYPE = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.STRING);
@@ -76,22 +79,20 @@ public class BuildingBoxEntity extends MobEntity {
 
     public static DefaultAttributeContainer.Builder createBuildingBoxAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 20)
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 100)
                 .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 500);
     }
 
     @Override
     protected Box calculateBoundingBox() {
-        if (!getDeployed()) {
-            return new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 0.6, this.getZ() - 0.5);
-        }
+        return switch (this.getDeployed()) {
+            case 1 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.2, this.getZ() - 0.5);
 
-        return switch (getBuildingLevel()) {
             case 2 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.5, this.getZ() - 0.5);
 
             case 3 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.8, this.getZ() - 0.5);
 
-            default -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.2, this.getZ() - 0.5);
+            default -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 0.6, this.getZ() - 0.5);
         };
 
     }
@@ -100,7 +101,7 @@ public class BuildingBoxEntity extends MobEntity {
     protected void initDataTracker() {
         super.initDataTracker();
 
-        dataTracker.startTracking(DEPLOYED, false);
+        dataTracker.startTracking(DEPLOYED, 0);
         dataTracker.startTracking(DEPLOYING, false);
         dataTracker.startTracking(OWNER_ID, 0);
         dataTracker.startTracking(BUILDING_TYPE, "");
@@ -110,7 +111,7 @@ public class BuildingBoxEntity extends MobEntity {
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
-        nbt.putBoolean("more_gun.deployed", getDeployed());
+        nbt.putInt("more_gun.deployed", getDeployed());
         nbt.putBoolean("more_gun.deploying", getDeploying());
         nbt.putInt("more_gun.ownerId", getOwnerId());
         nbt.putString("more_gun.buildingType", getBuildingType());
@@ -120,7 +121,7 @@ public class BuildingBoxEntity extends MobEntity {
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
-        if (nbt.contains("more_gun.deployed")) setDeployed(nbt.getBoolean("more_gun.deployed"));
+        if (nbt.contains("more_gun.deployed")) setDeployed(nbt.getInt("more_gun.deployed"));
         if (nbt.contains("more_gun.deploying")) setDeploying(nbt.getBoolean("more_gun.deploying"));
         if (nbt.contains("more_gun.ownerId")) setOwnerId(nbt.getInt("more_gun.ownerId"));
         if (nbt.contains("more_gun.buildingType")) setBuildingType(nbt.getString("more_gun.buildingType"));
@@ -128,10 +129,10 @@ public class BuildingBoxEntity extends MobEntity {
         if (nbt.contains("more_gun.buildingRotation")) setBuildingRotation(nbt.getFloat("more_gun.buildingRotation"));
     }
 
-    public void setDeployed(boolean deployed) {
+    public void setDeployed(int deployed) {
         dataTracker.set(DEPLOYED, deployed);
     }
-    public boolean getDeployed() {
+    public int getDeployed() {
         return dataTracker.get(DEPLOYED);
     }
 
@@ -182,7 +183,7 @@ public class BuildingBoxEntity extends MobEntity {
 
     public void setupAnimationStates() {
         if (this.getDeploying()) {
-            if (!this.deployAnimationState.isRunning() && !getDeployed()) {
+            if (!this.deployAnimationState.isRunning()) {
                 this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_DEPLOYING, SoundCategory.NEUTRAL, 0.5f, 1f, true);
                 for (int i = 0; i < 25; i++) {
                     this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
@@ -191,9 +192,9 @@ public class BuildingBoxEntity extends MobEntity {
             this.deployAnimationState.startIfNotRunning(this.age);
         }
 
-        if (this.deployAnimationState.getTimeRunning() >= 6300) {
-            setDeployed(true);
-            setDeploying(false);
+        if (this.deployAnimationState.getTimeRunning() >= 6300 && this.getBuildingLevel() != this.getDeployed()) {
+            this.setDeployed(this.getDeployed() + 1);
+            this.setDeploying(false);
         }
 
     }
@@ -213,8 +214,8 @@ public class BuildingBoxEntity extends MobEntity {
         PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         IntList list = IntList.of(
                 this.getId(),
-                this.getDeployed() ? 1 : 0,
-                this.getDeployed() ? 1 : 0
+                this.getDeploying() ? 1 : 0,
+                this.getDeployed()
         );
         passedData.writeIntList(list);
 
@@ -261,7 +262,7 @@ public class BuildingBoxEntity extends MobEntity {
     }
 
     public void calculateRotation() {
-        if (this.getDeployed()) {
+        if (this.getDeployed() > 0) {
             if (target != null) {
                 double dx = this.target.getX() - this.getX();
                 double dy = this.target.getBoundingBox().getCenter().y - this.getEyeY();
@@ -297,7 +298,7 @@ public class BuildingBoxEntity extends MobEntity {
     public void shootTarget() {
         World world = this.getWorld();
 
-        if (target != null && getDeployed() && canShoot) {
+        if (target != null && getDeployed() > 0 && canShoot) {
             Vec3d vec3d2 = target.getBoundingBox().getCenter().subtract(this.getEyePos());
             Vec3d vec3d3 = vec3d2.normalize();
             List<LivingEntity> potentialTargets = new ArrayList<>();
@@ -370,27 +371,31 @@ public class BuildingBoxEntity extends MobEntity {
 
         if (attacker instanceof PlayerEntity player) {
             if (player.getMainHandStack().getItem() instanceof WrenchItem ) {
-                if (!(this.getDeployed() || this.getDeploying())) {
-                    this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), SoundEvents.BLOCK_ANVIL_HIT, SoundCategory.PLAYERS, 0.5F, 1F, true);
+                if (!(this.getDeployed() > 0 || this.getDeploying())) {
                     this.setDeploying(true);
+                    this.getBuildingLevel();
                     return false;
-                } else if (player.getInventory().contains(Items.IRON_INGOT.getDefaultStack())) {
+                } else if (player.getInventory().contains(AllItems.BRASS_INGOT.asStack()) && this.getHealth() != this.getMaxHealth()) {
+                    this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 0.5F, 1F, true);
                     int healAmount = 5;
 
                     if (player.isSneaking()) {
-                        if (player.getInventory().count(Items.IRON_INGOT) > 5) {
-                            healAmount = 25;
-                        } else healAmount = player.getInventory().count(Items.IRON_INGOT);
+                        if (player.getInventory().count(AllItems.BRASS_INGOT.asItem()) > 5) {
+                            healAmount = (int) Math.clamp(this.getMaxHealth() - this.getHealth(), 5, 25);
+                        } else healAmount = player.getInventory().count(AllItems.BRASS_INGOT.asItem());
                     }
 
                     this.heal(healAmount);
                     if (!player.isCreative()) {
                         player.getInventory().getStack(
-                                player.getInventory().indexOf(Items.IRON_INGOT.getDefaultStack())
+                                player.getInventory().indexOf(AllItems.BRASS_INGOT.asStack())
                         ).decrement(healAmount / 5);
                     }
+                    ItemStackParticleEffect particleEffect = new ItemStackParticleEffect(ParticleTypes.ITEM, AllItems.BRASS_INGOT.asStack());
+                    this.getWorld().addImportantParticle(particleEffect, true, this.getX(), this.getY(), this.getZ(), 0, 0, 0);
                     return false;
                 }
+                return false;
             }
         }
 

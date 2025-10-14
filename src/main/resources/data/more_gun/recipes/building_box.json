@@ -3,7 +3,7 @@
   "pattern": [
     "IEI",
     "PBP",
-    "ILI"
+    "IMI"
   ],
   "key": {
     "I": {
@@ -18,8 +18,8 @@
     "P": {
       "item": "create:precision_mechanism"
     },
-    "L": {
-      "item": "create:redstone_link"
+    "M": {
+      "item": "more_gun:steam_engine_module"
     }
   },
   "result": {

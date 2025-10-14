@@ -1,4 +1,5 @@
 {
+  "item.more_gun.steam_engine_module": "Steam Engine Module",
   "item.more_gun.building_box": "Building Box",
   "item.more_gun.empty_building_box": "Empty Building Box",
 
@@ -24,7 +25,8 @@
   "more_gun.ponder.sentry.text_1": "This is a Building Box containing a Sentry",
   "more_gun.ponder.sentry.text_2": "Hit it with a Wrench to deploy it",
   "more_gun.ponder.sentry.text_3": "Once deployed, It will scan for targets in a 20 block radius",
-  "more_gun.ponder.sentry.text_4": "You can pick it up by right clicking it while sneaking with an empty hand",
+  "more_gun.ponder.sentry.text_4": "You can repair it by hitting it with a wrench and with brass ingots in you're inventory",
+  "more_gun.ponder.sentry.text_5": "You can pick it up by right clicking it while sneaking with an empty hand",
 
   "death.attack.shot": "%s was shot",
   "death.attack.shot.item": "%s was shot by %s using %s",

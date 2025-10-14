@@ -51,7 +51,7 @@ public class BuildingBoxRenderer extends MobEntityRenderer<BuildingBoxEntity, Bu
                 VertexConsumer sentryBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(Level1SentryTexture));
                 this.sentryModel.setAngles(mobEntity, 0, 0, l, j, mobEntity.getPitch());
 
-                if (!(mobEntity.getDeployed() || mobEntity.deployAnimationState.getTimeRunning() >= 10)) {
+                if (!(mobEntity.getDeployed() > 0 || mobEntity.deployAnimationState.getTimeRunning() >= 10)) {
                     matrices.scale(0.2f, 0.2f, 0.2f);
                     matrices.translate(0f, 5.75f, 0f);
                 }

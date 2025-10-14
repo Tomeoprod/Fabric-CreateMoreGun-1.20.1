@@ -41,8 +41,8 @@ public class BuildingBoxItem extends Item {
             entity.setBuildingLevel(getBuildingLevel(stack));
             entity.setBuildingRotation(player.getHeadYaw());
 
+            world.playSound(null, context.getHitPos().x, context.getHitPos().y, context.getHitPos().z, SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 0.5F, 1F);
             world.spawnEntity(entity);
-            world.playSoundAtBlockCenter(entity.getBlockPos(), SoundEvents.BLOCK_ANVIL_PLACE, SoundCategory.PLAYERS, 0.5F, 1F, true);
 
             if (!player.isCreative()) {
                 stack.decrement(1);

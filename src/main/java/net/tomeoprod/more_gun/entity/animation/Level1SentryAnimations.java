@@ -19,16 +19,16 @@ public class Level1SentryAnimations {
             ))
             .build();
 
-    public static final Animation LEVEL_1_SENTRY_SHOOT = Animation.Builder.create(0.3333F).looping()
+    public static final Animation LEVEL_1_SENTRY_SHOOT = Animation.Builder.create(0.25F).looping()
             .addBoneAnimation("head", new Transformation(Transformation.Targets.TRANSLATE,
                     new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-                    new Keyframe(0.125F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.2F), Transformation.Interpolations.LINEAR),
-                    new Keyframe(0.25F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+                    new Keyframe(0.0833F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.5F), Transformation.Interpolations.LINEAR),
+                    new Keyframe(0.2083F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
             ))
             .addBoneAnimation("barrel", new Transformation(Transformation.Targets.TRANSLATE,
                     new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
-                    new Keyframe(0.125F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.75F), Transformation.Interpolations.LINEAR),
-                    new Keyframe(0.3333F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
+                    new Keyframe(0.0833F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 1.25F), Transformation.Interpolations.LINEAR),
+                    new Keyframe(0.25F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR)
             ))
             .build();
 
