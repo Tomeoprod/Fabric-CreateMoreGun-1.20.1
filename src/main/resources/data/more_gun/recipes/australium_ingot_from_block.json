@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "group": "australium_nugget",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "more_gun:australium_block"
+    }
+  ],
+  "result": {
+    "item": "more_gun:australium_ingot",
+    "count": 9
+  }
+}

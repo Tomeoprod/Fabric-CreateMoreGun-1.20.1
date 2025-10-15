@@ -18,6 +18,10 @@ repositories {
     maven { url = "https://maven.jamieswhiteshirt.com/libs-release" }
     maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" }
     mavenCentral()
+    maven {
+        name = "Gegy"
+        url = uri("https://maven.gegy.dev")
+    }
 }
 
 fabricApi {
@@ -34,6 +38,7 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
     modImplementation "com.simibubi.create:create-fabric-$minecraft_version:$create_version"
     modLocalRuntime "mezz.jei:jei-$minecraft_version-fabric:$jei_version"
+    modLocalRuntime "dev.lambdaurora.lambdynamiclights:lambdynamiclights-runtime:4.4.0+1.20.1"
     modImplementation "com.ptsmods:devlogin:3.5"
 }
 

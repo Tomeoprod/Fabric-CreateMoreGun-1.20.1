@@ -17,6 +17,7 @@ public class MGItemGroups {
             .displayName(Text.translatable("itemgroup.more_gun.more_gun_item_group"))
             .entries((displayContext, entries) -> {
                 entries.add(MGBlocks.AUSTRALIUM_ORE.asItem());
+                entries.add(MGBlocks.AUSTRALIUM_BLOCK.asItem());
                 entries.add(MGItems.RAW_AUSTRALIUM);
                 entries.add(MGItems.AUSTRALIUM_INGOT);
                 entries.add(MGItems.AUSTRALIUM_NUGGET);

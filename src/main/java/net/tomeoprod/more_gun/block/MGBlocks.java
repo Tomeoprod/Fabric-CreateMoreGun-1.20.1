@@ -13,7 +13,8 @@ import net.minecraft.util.math.intprovider.UniformIntProvider;
 import net.tomeoprod.more_gun.MoreGun;
 
 public class MGBlocks {
-    public static final Block AUSTRALIUM_ORE = register(new ExperienceDroppingBlock(FabricBlockSettings.copyOf(Blocks.STONE).strength(2f), UniformIntProvider.create(2, 5)), "australium_ore", true);
+    public static final Block AUSTRALIUM_ORE = register(new ExperienceDroppingBlock(FabricBlockSettings.copyOf(Blocks.STONE).luminance(12).strength(2f), UniformIntProvider.create(2, 5)), "australium_ore", true);
+    public static final Block AUSTRALIUM_BLOCK = register(new Block(FabricBlockSettings.copyOf(Blocks.IRON_BLOCK).luminance(12)), "australium_block", true);
 
     public static Block register(Block block, String name, boolean shouldRegisterItem) {
         Identifier id = new Identifier(MoreGun.MOD_ID, name);

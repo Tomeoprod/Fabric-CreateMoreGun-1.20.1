@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "australium_ingot",
+  "category": "misc",
+  "pattern": [
+    "NNN",
+    "NNN",
+    "NNN"
+  ],
+  "key": {
+    "N": {
+      "item": "more_gun:australium_nugget"
+    }
+  },
+  "result": {
+    "item": "more_gun:australium_ingot",
+    "count": 1
+  }
+}

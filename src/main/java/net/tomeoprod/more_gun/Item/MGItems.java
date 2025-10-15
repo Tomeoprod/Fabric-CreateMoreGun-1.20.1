@@ -1,10 +1,7 @@
 package net.tomeoprod.more_gun.Item;
 
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroupEntries;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
@@ -23,13 +20,6 @@ public class MGItems {
         return Registry.register(Registries.ITEM, new Identifier(MoreGun.MOD_ID, name), item);
     }
 
-    private static void addItemsToIngredientItemGroup(FabricItemGroupEntries entries) {
-        entries.add(RAW_AUSTRALIUM);
-        entries.add(AUSTRALIUM_NUGGET);
-        entries.add(AUSTRALIUM_INGOT);
-    }
-
     public static void initialize() {
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(MGItems::addItemsToIngredientItemGroup);
     }
 }
