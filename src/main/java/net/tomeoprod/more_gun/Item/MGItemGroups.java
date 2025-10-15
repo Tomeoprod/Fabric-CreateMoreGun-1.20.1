@@ -19,6 +19,7 @@ public class MGItemGroups {
                 entries.add(MGBlocks.AUSTRALIUM_ORE.asItem());
                 entries.add(MGItems.RAW_AUSTRALIUM);
                 entries.add(MGItems.AUSTRALIUM_INGOT);
+                entries.add(MGItems.AUSTRALIUM_NUGGET);
                 entries.add(MGItems.STEAM_ENGINE_MODULE);
                 entries.add(MGItems.EMPTY_BUILDING_BOX);
 
