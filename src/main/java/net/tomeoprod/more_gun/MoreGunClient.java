@@ -3,8 +3,11 @@ package net.tomeoprod.more_gun;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.entity.model.EntityModelLayer;
 import net.minecraft.util.Identifier;
+import net.tomeoprod.more_gun.block.entity.MGBlockEntities;
+import net.tomeoprod.more_gun.block.entity.renderer.SonarBlockEntityRenderer;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.entity.client.model.BuildingBoxModel;
 import net.tomeoprod.more_gun.entity.client.BuildingBoxRenderer;
@@ -19,7 +22,7 @@ public class MoreGunClient implements ClientModInitializer {
     public void onInitializeClient() {
         MGParticles.clientInit();
 
-        EntityRendererRegistry.register(MGEntities.BUILDING_BOX_ENTITY_TYPE, BuildingBoxRenderer::new);
+        BlockEntityRendererFactories.register(MGBlockEntities.SONAR, SonarBlockEntityRenderer::new);
 
         EntityModelLayerRegistry.registerModelLayer(MODEL_BUILDING_BOX_LAYER, BuildingBoxModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(MODEL_LEVEL_1_SENTRY_LAYER, Level1SentryModel::getTexturedModelData);

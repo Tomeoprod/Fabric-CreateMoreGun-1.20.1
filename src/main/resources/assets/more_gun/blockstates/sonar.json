@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": { "model": "more_gun:block/sonar/block" }
+    "": { "model": "more_gun:block/sonar" }
   }
 }

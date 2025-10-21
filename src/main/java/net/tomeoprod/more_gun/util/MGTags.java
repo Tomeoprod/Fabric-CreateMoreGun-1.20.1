@@ -17,7 +17,7 @@ public class MGTags {
     }
 
     public static class Items {
-        //public static final TagKey<Item> <TAG NAME> = createTag("<TAG ID>");
+        public static final TagKey<Item> AUSTRALIUM = createTag("australium");
 
         private static TagKey<Item> createTag(String name) {
             return TagKey.of(RegistryKeys.ITEM, Identifier.of(MoreGun.MOD_ID, name));
