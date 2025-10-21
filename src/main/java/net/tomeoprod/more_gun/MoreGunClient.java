@@ -22,8 +22,6 @@ public class MoreGunClient implements ClientModInitializer {
     public void onInitializeClient() {
         MGParticles.clientInit();
 
-        BlockEntityRendererFactories.register(MGBlockEntities.SONAR, SonarBlockEntityRenderer::new);
-
         EntityModelLayerRegistry.registerModelLayer(MODEL_BUILDING_BOX_LAYER, BuildingBoxModel::getTexturedModelData);
         EntityModelLayerRegistry.registerModelLayer(MODEL_LEVEL_1_SENTRY_LAYER, Level1SentryModel::getTexturedModelData);
 
