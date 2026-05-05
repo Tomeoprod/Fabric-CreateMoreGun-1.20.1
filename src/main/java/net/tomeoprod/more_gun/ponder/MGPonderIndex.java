@@ -1,14 +1,16 @@
 package net.tomeoprod.more_gun.ponder;
 
-import com.simibubi.create.foundation.ponder.PonderRegistrationHelper;
+import com.tterrag.registrate.util.entry.ItemProviderEntry;
+import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.util.Identifier;
-import net.tomeoprod.more_gun.MoreGun;
+import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.ponder.scenes.BuildingScenes;
 
 public class MGPonderIndex {
-    static final PonderRegistrationHelper HELPER = new PonderRegistrationHelper(MoreGun.MOD_ID);
+    public static void registerPonders(PonderSceneRegistrationHelper<Identifier> helper) {
+        PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
-    public static void registerPonders() {
-        HELPER.addStoryBoard(Identifier.of(MoreGun.MOD_ID, "building_box"), "buildings", BuildingScenes::sentry);
+        HELPER.forComponents(MGItems.BUILDING_BOX).addStoryBoard("buildings", BuildingScenes::sentry);
     }
 }

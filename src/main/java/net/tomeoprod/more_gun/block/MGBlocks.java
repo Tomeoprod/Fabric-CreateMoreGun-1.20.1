@@ -1,6 +1,5 @@
 package net.tomeoprod.more_gun.block;
 
-import com.simibubi.create.content.kinetics.BlockStressDefaults;
 import com.simibubi.create.foundation.data.AssetLookup;
 import com.simibubi.create.foundation.data.BlockStateGen;
 import com.simibubi.create.foundation.data.SharedProperties;
@@ -31,7 +30,6 @@ public class MGBlocks {
             .initialProperties(SharedProperties::softMetal)
             .properties(p -> p.nonOpaque().mapColor(MapColor.SPRUCE_BROWN))
             .addLayer(() -> RenderLayer::getCutoutMipped)
-            .transform(BlockStressDefaults.setImpact(4.0))
             .transform(axeOrPickaxe())
             .blockstate((c, p) -> BlockStateGen.axisBlock(c, p, AssetLookup.forPowered(c, p)))
             .item()

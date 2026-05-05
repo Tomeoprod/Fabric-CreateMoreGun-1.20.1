@@ -232,7 +232,7 @@ public class BuildingBoxEntity extends MobEntity {
         );
 
         List<HostileEntity> potentialTargets = world.getEntitiesByClass(HostileEntity.class, box, LivingEntity::isAlive);
-        HostileEntity closet = null;
+        HostileEntity closest = null;
 
         for (HostileEntity target : potentialTargets) {
             BlockHitResult hitResult = world.raycast(new RaycastContext(this.getEyePos(), target.getBoundingBox().getCenter(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
@@ -241,19 +241,19 @@ public class BuildingBoxEntity extends MobEntity {
 
             if ((hitType == HitResult.Type.BLOCK && world.getBlockState(hitPos).isTransparent(world, hitPos)) || hitType == HitResult.Type.MISS) {
                 Vec3d d1 = target.getPos().subtract(this.getPos());
-                if (closet == null) {
-                    closet = target;
+                if (closest == null) {
+                    closest = target;
                 } else {
-                    Vec3d d2 = closet.getPos().subtract(this.getPos());
+                    Vec3d d2 = closest.getPos().subtract(this.getPos());
                     if (d1.length() < d2.length()) {
-                        closet = target;
+                        closest = target;
                     }
                 }
             }
 
         }
 
-        this.target = closet;
+        this.target = closest;
     }
 
     public void calculateRotation() {

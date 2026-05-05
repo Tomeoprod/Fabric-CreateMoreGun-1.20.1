@@ -5,6 +5,8 @@ import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
+import net.createmod.catnip.lang.FontHelper;
+import net.createmod.ponder.foundation.PonderIndex;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.entity.damage.DamageType;
@@ -19,6 +21,7 @@ import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.particle.MGParticles;
 import net.tomeoprod.more_gun.ponder.MGPonderIndex;
+import net.tomeoprod.more_gun.ponder.MGPonderPlugin;
 import net.tomeoprod.more_gun.sound.MGSounds;
 import net.tomeoprod.more_gun.world.MGOreGeneration;
 import org.slf4j.Logger;
@@ -33,7 +36,7 @@ public class MoreGun implements ModInitializer {
     public static final RegistryKey<DamageType> SHOT_DAMAGE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID, "shot"));
 
     static {
-        REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, TooltipHelper.Palette.STANDARD_CREATE)
+        REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                 .andThen(TooltipModifier.mapNull(KineticStats.create(item))));
     }
 
@@ -47,8 +50,9 @@ public class MoreGun implements ModInitializer {
         MGParticles.MainInit();
         MGMessages.registerC2SPackets();
         MGSounds.initialize();
-        MGPonderIndex.registerPonders();
         MGOreGeneration.generateOres();
+
+        PonderIndex.addPlugin(new MGPonderPlugin());
 
         REGISTRATE.register();
     }

@@ -1,6 +1,5 @@
 package net.tomeoprod.more_gun.block.entity.renderer;
 
-import com.jozufozu.flywheel.backend.Backend;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntityRenderer;
 import com.simibubi.create.foundation.blockEntity.behaviour.filtering.FilteringRenderer;
 import net.minecraft.block.BlockState;
