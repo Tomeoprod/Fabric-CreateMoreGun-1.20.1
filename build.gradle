@@ -25,6 +25,22 @@ repositories {
         name = "Gegy"
         url = uri("https://maven.gegy.dev")
     }
+
+    maven {
+        // location of the maven that hosts JEI files before January 2023
+        name = "Progwml6's maven"
+        url = "https://dvs1.progwml6.com/files/maven/"
+    }
+    maven {
+        // location of the maven that hosts JEI files since January 2023
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
+    maven {
+        // location of a maven mirror for JEI files, as a fallback
+        name = "ModMaven"
+        url = "https://modmaven.dev"
+    }
 }
 
 fabricApi {
@@ -40,7 +56,10 @@ dependencies {
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
     modImplementation "com.simibubi.create:create-fabric:${create_version}"
-    modLocalRuntime "mezz.jei:jei-$minecraft_version-fabric:$jei_version"
+
+    modCompileOnlyApi("mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}")
+    //modRuntimeOnly("mezz.jei:jei-${minecraft_version}-fabric:${jei_version}")
+
     //modLocalRuntime "dev.lambdaurora.lambdynamiclights:lambdynamiclights-runtime:4.4.0+1.20.1"
     modImplementation "com.ptsmods:devlogin:3.5"
 }

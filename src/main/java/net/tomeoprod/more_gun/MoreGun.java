@@ -3,7 +3,6 @@ package net.tomeoprod.more_gun;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
-import com.simibubi.create.foundation.item.TooltipHelper;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
 import net.createmod.ponder.foundation.PonderIndex;
@@ -16,11 +15,9 @@ import net.minecraft.util.Identifier;
 import net.tomeoprod.more_gun.Item.MGItemGroups;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.block.MGBlocks;
-import net.tomeoprod.more_gun.block.entity.MGBlockEntities;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.particle.MGParticles;
-import net.tomeoprod.more_gun.ponder.MGPonderIndex;
 import net.tomeoprod.more_gun.ponder.MGPonderPlugin;
 import net.tomeoprod.more_gun.sound.MGSounds;
 import net.tomeoprod.more_gun.world.MGOreGeneration;
@@ -44,7 +41,6 @@ public class MoreGun implements ModInitializer {
 	public void onInitialize() {
         MGItems.initialize();
         MGBlocks.initialize();
-        MGBlockEntities.initialize();
         MGItemGroups.registerModItemGroups();
         MGEntities.registerModEntities();
         MGParticles.MainInit();

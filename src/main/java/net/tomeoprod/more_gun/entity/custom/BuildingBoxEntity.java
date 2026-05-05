@@ -172,6 +172,11 @@ public class BuildingBoxEntity extends MobEntity {
     }
 
     @Override
+    public boolean isPushedByFluids() {
+        return false;
+    }
+
+    @Override
     public boolean isCollidable() {
         return true;
     }
@@ -317,7 +322,7 @@ public class BuildingBoxEntity extends MobEntity {
                 shootAnimationState.startIfNotRunning(this.age);
                 Vec3d particleSpawnPos = this.getEyePos().add(this.getRotationVec(1.0F).multiply(0.65));
                 world.addImportantParticle(
-                        (ParticleEffect) MGParticles.MUZZLE_FLASH_PARTICLE,
+                        MGParticles.MUZZLE_FLASH_PARTICLE,
                         particleSpawnPos.x,
                         particleSpawnPos.y + 0.1,
                         particleSpawnPos.z,

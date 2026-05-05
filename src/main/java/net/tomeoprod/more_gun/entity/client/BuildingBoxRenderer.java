@@ -1,6 +1,5 @@
 package net.tomeoprod.more_gun.entity.client;
 
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
