@@ -13,6 +13,7 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
+import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -30,21 +31,33 @@ public class BuildingBoxItem extends Item {
         ItemStack stack = context.getStack();
 
         if (context.getSide() == Direction.UP && !world.isClient) {
-            BuildingBoxEntity entity = new BuildingBoxEntity(world);
-            entity.setPos(context.getHitPos().x, context.getHitPos().y, context.getHitPos().z);
+            BuildingBoxEntity entity;
 
-            entity.setOwnerId(player.getId());
-            entity.setBuildingType(getBuildingType(stack));
-            entity.setBuildingLevel(getBuildingLevel(stack));
-            entity.setBuildingRotation(player.getHeadYaw());
-
-            world.playSound(null, context.getHitPos().x, context.getHitPos().y, context.getHitPos().z, SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 0.5F, 1F);
-            world.spawnEntity(entity);
-
-            if (!player.isCreative()) {
-                stack.decrement(1);
+            switch (getBuildingType(stack)) {
+                case "Sentry" -> entity = new SentryEntity(world);
+                default -> entity = null;
             }
-            return ActionResult.SUCCESS;
+
+            if (entity != null) {
+
+
+                entity.setPos(context.getHitPos().x, context.getHitPos().y, context.getHitPos().z);
+
+                entity.setOwnerId(player.getId());
+                entity.setBuildingType(getBuildingType(stack));
+                entity.setBuildingLevel(getBuildingLevel(stack));
+                entity.setBuildingRotation(player.getHeadYaw());
+
+                world.playSound(null, context.getHitPos().x, context.getHitPos().y, context.getHitPos().z, SoundEvents.BLOCK_ANVIL_LAND, SoundCategory.PLAYERS, 0.5F, 1F);
+                world.spawnEntity(entity);
+
+                if (!player.isCreative()) {
+                    stack.decrement(1);
+                }
+                return ActionResult.SUCCESS;
+            }
+
+            return ActionResult.FAIL;
         }
 
         return super.useOnBlock(context);

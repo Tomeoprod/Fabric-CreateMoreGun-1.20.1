@@ -1,15 +1,14 @@
 package net.tomeoprod.more_gun.ponder.scenes;
 
 import com.simibubi.create.AllItems;
-import com.simibubi.create.foundation.ponder.*;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.element.ElementLink;
 import net.createmod.ponder.api.element.EntityElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
-import net.createmod.ponder.foundation.element.InputWindowElement;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
+import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 
 import java.util.Random;
 
@@ -18,7 +17,7 @@ public class BuildingScenes {
         scene.title("sentry", "Sentry");
         scene.showBasePlate();
         ElementLink<EntityElement> sentry = scene.world().createEntity(world -> {
-            BuildingBoxEntity entity = new BuildingBoxEntity(world);
+            BuildingBoxEntity entity = new SentryEntity(world);
             entity.setPos(2.5, 1, 2.5);
             entity.setBuildingType("Sentry");
             entity.setBuildingLevel(1);

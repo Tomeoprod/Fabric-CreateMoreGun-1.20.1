@@ -13,21 +13,22 @@ import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.MoreGunClient;
 import net.tomeoprod.more_gun.entity.client.model.BuildingBoxModel;
 import net.tomeoprod.more_gun.entity.client.model.Level1SentryModel;
-import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
+import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 
-public class BuildingBoxRenderer extends MobEntityRenderer<BuildingBoxEntity, BuildingBoxModel<BuildingBoxEntity>> {
+public class SentryRenderer extends MobEntityRenderer<SentryEntity, BuildingBoxModel<SentryEntity>> {
+    @SuppressWarnings("rawtypes")
     private final Level1SentryModel sentryModel;
 
     private static final Identifier Level1SentryTexture = Identifier.of(MoreGun.MOD_ID, "textures/entity/sentry_lv1.png");
 
-    public BuildingBoxRenderer(EntityRendererFactory.Context context) {
+    public SentryRenderer(EntityRendererFactory.Context context) {
         super(context, new BuildingBoxModel<>(context.getPart(MoreGunClient.MODEL_BUILDING_BOX_LAYER)), 0.5f);
 
         this.sentryModel = new Level1SentryModel<>(context.getPart(MoreGunClient.MODEL_LEVEL_1_SENTRY_LAYER));
     }
 
     @Override
-    public void render(BuildingBoxEntity mobEntity, float f, float g, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    public void render(SentryEntity mobEntity, float f, float g, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
         matrices.push();
         float l = this.getAnimationProgress(mobEntity, g);
         this.setupTransforms(mobEntity, matrices, l, 0, g);
@@ -63,7 +64,7 @@ public class BuildingBoxRenderer extends MobEntityRenderer<BuildingBoxEntity, Bu
     }
 
     @Override
-    public Identifier getTexture(BuildingBoxEntity entity) {
+    public Identifier getTexture(SentryEntity entity) {
         return Identifier.of(MoreGun.MOD_ID, "textures/item/building_box.png");
     }
 }

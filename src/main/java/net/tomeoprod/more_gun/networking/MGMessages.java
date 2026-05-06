@@ -41,7 +41,7 @@ public class MGMessages {
             ServerPlayNetworking.registerGlobalReceiver(SET_DATA_TRACKERS_PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
                 ServerWorld world = serverPlayerEntity.getServerWorld();
                 IntList list = packetByteBuf.readIntList();
-                Entity packetEntity = world.getEntityById(list.getFirst());
+                Entity packetEntity = world.getEntityById(list.getInt(0));
                 boolean deploying = list.getInt(1) == 1;
                 int deployed = list.getInt(2);
 
