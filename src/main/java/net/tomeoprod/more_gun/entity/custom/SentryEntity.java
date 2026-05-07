@@ -2,6 +2,7 @@ package net.tomeoprod.more_gun.entity.custom;
 
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
@@ -31,6 +32,7 @@ import java.util.Random;
 public class SentryEntity extends BuildingBoxEntity{
     public Entity target;
     private boolean canShoot = false;
+    public final AnimationState shootAnimationState = new AnimationState();
 
     public SentryEntity(EntityType<? extends BuildingBoxEntity> buildingBoxEntityEntityType, World world) {
         super(buildingBoxEntityEntityType, world);

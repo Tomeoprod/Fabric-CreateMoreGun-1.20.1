@@ -43,7 +43,7 @@ public class BuildingScenes {
 
         scene.idle(80);
 
-        scene.overlay().showText(80).pointAt(util.vector().centerOf(2, 1, 2)).text("You can repair it by hitting it with a wrench and with brass ingots in you're inventory").attachKeyFrame();
+        scene.overlay().showText(80).pointAt(util.vector().centerOf(2, 1, 2)).text("You can repair it by hitting it with a wrench and brass ingots in you're inventory").attachKeyFrame();
         scene.overlay().showControls(util.vector().topOf(2, 1, 2), Pointing.DOWN, 40).leftClick().withItem(AllItems.WRENCH.asStack());
 
         scene.idle(100);

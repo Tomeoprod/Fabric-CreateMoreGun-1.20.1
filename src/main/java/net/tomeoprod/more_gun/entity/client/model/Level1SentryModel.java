@@ -5,9 +5,9 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.SinglePartEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.tomeoprod.more_gun.entity.animation.Level1SentryAnimations;
-import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
+import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 
-public class Level1SentryModel<T extends BuildingBoxEntity> extends SinglePartEntityModel<T> {
+public class Level1SentryModel<T extends SentryEntity> extends SinglePartEntityModel<T> {
 	private final ModelPart sentry;
     private final ModelPart top;
     private final ModelPart head;
@@ -76,7 +76,7 @@ public class Level1SentryModel<T extends BuildingBoxEntity> extends SinglePartEn
     }
 
 	@Override
-	public void setAngles(BuildingBoxEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
+	public void setAngles(SentryEntity entity, float limbSwing, float limbSwingAmount, float ageInTicks, float netHeadYaw, float headPitch) {
         this.getPart().traverse().forEach(ModelPart::resetTransform);
 
         if (entity.getDeployed() > 0) {

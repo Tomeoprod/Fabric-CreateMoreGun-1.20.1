@@ -45,7 +45,6 @@ import java.util.Random;
 
 public abstract class BuildingBoxEntity extends MobEntity {
     public final AnimationState deployAnimationState = new AnimationState();
-    public final AnimationState shootAnimationState = new AnimationState();
 
     private static final TrackedData<Integer> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
