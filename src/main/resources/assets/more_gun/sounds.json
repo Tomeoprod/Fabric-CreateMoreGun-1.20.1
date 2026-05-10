@@ -41,27 +41,6 @@
     ]
   },
 
-  "sentry_scan_1": {
-    "subtitle": "sound.more_gun.sentry_scan",
-    "sounds": [
-      "more_gun:sentry_scan_1"
-    ]
-  },
-
-  "sentry_scan_2": {
-    "subtitle": "sound.more_gun.sentry_scan",
-    "sounds": [
-      "more_gun:sentry_scan_2"
-    ]
-  },
-
-  "sentry_scan_3": {
-    "subtitle": "sound.more_gun.sentry_scan",
-    "sounds": [
-      "more_gun:sentry_scan_3"
-    ]
-  },
-
   "sentry_shoot_1": {
     "subtitle": "sound.more_gun.sentry_shoot",
     "sounds": [
@@ -108,6 +87,49 @@
     "subtitle": "sound.more_gun.sentry_spot",
     "sounds": [
       "more_gun:sentry_spot_2"
+    ]
+  },
+
+  "sentry_search_1": {
+    "subtitle": "sound.more_gun.sentry_search_1",
+    "sounds": [
+      "more_gun:sentry_search_1"
+    ]
+  },
+  "wrench_hit_1": {
+    "subtitle": "sound.more_gun.wrench_hit",
+    "sounds": [
+      "more_gun:wrench_hit_1"
+    ]
+  },
+  "wrench_hit_2": {
+    "subtitle": "sound.more_gun.wrench_hit",
+    "sounds": [
+      "more_gun:wrench_hit_2"
+    ]
+  },
+  "wrench_hit_fail": {
+    "subtitle": "sound.more_gun.wrench_hit_fail",
+    "sounds": [
+      "more_gun:wrench_hit_fail"
+    ]
+  },
+  "box_1": {
+    "subtitle": "sound.more_gun.box",
+    "sounds": [
+      "more_gun:box_1"
+    ]
+  },
+  "box_2": {
+    "subtitle": "sound.more_gun.box",
+    "sounds": [
+      "more_gun:box_2"
+    ]
+  },
+  "box_3": {
+    "subtitle": "sound.more_gun.box",
+    "sounds": [
+      "more_gun:box_3"
     ]
   }
 }

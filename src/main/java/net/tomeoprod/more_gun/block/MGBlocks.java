@@ -25,5 +25,6 @@ public class MGBlocks {
         return Registry.register(Registries.BLOCK, id, block);
     }
 
+    @SuppressWarnings("EmptyMethod")
     public static void initialize() {}
 }

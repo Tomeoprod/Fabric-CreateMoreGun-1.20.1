@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "bullet",
+  "category": "misc",
+  "pattern": [
+    "B",
+    "G",
+    "I"
+  ],
+  "key": {
+    "B": {
+      "item": "create:brass_nugget"
+    },
+    "G": {
+      "item": "minecraft:gunpowder"
+    },
+    "I": {
+      "item": "create:iron_sheet"
+    }
+  },
+  "result": {
+    "item": "more_gun:bullet",
+    "count": 1
+  }
+}

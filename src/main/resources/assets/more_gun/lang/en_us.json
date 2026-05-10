@@ -5,6 +5,7 @@
   "item.more_gun.australium_ingot": "Australium Ingot",
   "item.more_gun.australium_nugget": "Australium Nugget",
   "item.more_gun.raw_australium": "Raw Australium",
+  "item.more_gun.bullet": "Bullet",
 
   "block.more_gun.sonar": "Sonar",
   "block.more_gun.australium_ore": "Australium Ore",
@@ -18,7 +19,7 @@
 
   "sound.more_gun.sentry_hurt": "Sentry damaged",
 
-  "sound.more_gun.sentry_scan": "Sentry scanning",
+  "sound.more_gun.sentry_search": "Sentry searching",
 
   "sound.more_gun.sentry_shoot": "Sentry shooting",
 
@@ -28,14 +29,27 @@
 
   "sound.more_gun.sentry_spot": "Sentry detected an enemy",
 
+  "sound.more_gun.box" : "Box being placed",
+
+  "sound.more_gun.wrench_hit" : "Building being repaired",
+
+  "sound.more_gun.wrench_hit_fail" : "Wrench hitting metal",
+
   "more_gun.ponder.sentry.header": "Sentry",
   "more_gun.ponder.sentry.text_1": "This is a Building Box containing a Sentry",
   "more_gun.ponder.sentry.text_2": "Hit it with a Wrench to deploy it",
   "more_gun.ponder.sentry.text_3": "Once deployed, It will scan for targets in a 20 block radius",
-  "more_gun.ponder.sentry.text_4": "You can repair it by hitting it with a wrench and with brass ingots in you're inventory",
-  "more_gun.ponder.sentry.text_5": "You can pick it up by right clicking it while sneaking with an empty hand",
+  "more_gun.ponder.sentry.text_4": "You can repair it by hitting it with a wrench and a brass ingot in you're inventory\"",
+  "more_gun.ponder.sentry.text_5": "You can pick it up by sneaking and right clicking it with an empty hand",
 
   "death.attack.shot": "%s was shot",
   "death.attack.shot.item": "%s was shot by %s using %s",
-  "death.attack.shot.player": "%s was shot whilst trying to escape %s"
+  "death.attack.shot.player": "%s was shot whilst trying to escape %s",
+
+  "more_gun.goggles.building.info": "Building Info : ",
+  "more_gun.goggles.building.type": "§7Type : ",
+  "more_gun.goggles.building.level": "§7Level : ",
+  "more_gun.goggles.building.health": "§7Health : ",
+  "more_gun.goggles.building.ammo": "§7Ammo : ",
+  "more_gun.goggles.building.rockets": "§7Rockets : "
 }

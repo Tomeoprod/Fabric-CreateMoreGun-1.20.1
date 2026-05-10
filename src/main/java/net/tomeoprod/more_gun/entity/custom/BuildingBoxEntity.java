@@ -3,6 +3,7 @@ package net.tomeoprod.more_gun.entity.custom;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.equipment.wrench.WrenchItem;
+import com.simibubi.create.foundation.utility.CreateLang;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -29,22 +30,27 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.Item.MGItems;
-import net.tomeoprod.more_gun.Item.custom.BuildingBoxItem;
+import net.tomeoprod.more_gun.MoreGun;
+import net.tomeoprod.more_gun.goggles.IHaveEntityGoggleInformation;
 import net.tomeoprod.more_gun.networking.MGMessages;
+import net.tomeoprod.more_gun.sound.MGSounds;
+import net.tomeoprod.more_gun.util.TF2Utils;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.Random;
 
-public abstract class BuildingBoxEntity extends MobEntity {
+public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntityGoggleInformation {
     public final AnimationState deployAnimationState = new AnimationState();
+    public final AnimationState deployedAnimationState = new AnimationState();
 
     private static final TrackedData<Integer> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Boolean> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
@@ -59,7 +65,7 @@ public abstract class BuildingBoxEntity extends MobEntity {
 
     public static DefaultAttributeContainer.Builder createBuildingBoxAttributes() {
         return MobEntity.createMobAttributes()
-                .add(EntityAttributes.GENERIC_MAX_HEALTH, 100)
+                .add(EntityAttributes.GENERIC_MAX_HEALTH, 150)
                 .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 500);
     }
 
@@ -169,11 +175,14 @@ public abstract class BuildingBoxEntity extends MobEntity {
             this.deployAnimationState.startIfNotRunning(this.age);
         }
 
-        if (this.deployAnimationState.getTimeRunning() >= 6300 && this.getBuildingLevel() != this.getDeployed()) {
+        if (this.deployAnimationState.getTimeRunning() >= 7400 && this.getBuildingLevel() != this.getDeployed()) {
             this.setDeployed(this.getDeployed() + 1);
             this.setDeploying(false);
         }
 
+        if (this.getDeployed() > 0) {
+            this.deployedAnimationState.startIfNotRunning(this.age);
+        }
     }
 
     abstract public SoundEvent getDeployingSound();
@@ -200,11 +209,21 @@ public abstract class BuildingBoxEntity extends MobEntity {
 
     @Override
     public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
-        if (player.isSneaking()) {
-            ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
-            BuildingBoxItem.setBuildingProperties(stack, this.getBuildingType(), this.getBuildingLevel());
+        World world = player.getWorld();
 
-            player.giveItemStack(stack);
+        if (player.isSneaking() && !this.getDeploying()) {
+            ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
+            TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getHealth());
+
+            ItemEntity item = new ItemEntity(
+                    world,
+                    this.getX(),
+                    this.getY() + 0.5,
+                    this.getZ(),
+                    stack
+            );
+
+            world.spawnEntity(item);
             this.discard();
             return ActionResult.SUCCESS;
         }
@@ -227,29 +246,24 @@ public abstract class BuildingBoxEntity extends MobEntity {
                 if (!(this.getDeployed() > 0 || this.getDeploying())) {
                     this.setDeploying(true);
                     this.getBuildingLevel();
+                    world.playSoundAtBlockCenter(this.getBlockPos(), TF2Utils.getRandomWrenchSound(), SoundCategory.PLAYERS, 0.5F, 1F, true);
                     return false;
+
                 } else if (player.getInventory().contains(AllItems.BRASS_INGOT.asStack()) && this.getHealth() != this.getMaxHealth()) {
-                    this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), SoundEvents.BLOCK_ANVIL_USE, SoundCategory.PLAYERS, 0.5F, 1F, true);
-                    int healAmount = 5;
+                    world.playSoundAtBlockCenter(this.getBlockPos(), TF2Utils.getRandomWrenchSound(), SoundCategory.PLAYERS, 0.5F, 1F, true);
 
-                    if (player.isSneaking()) {
-                        if (player.getInventory().count(AllItems.BRASS_INGOT.asItem()) > 5) {
-                            healAmount = (int) MathHelper.clamp(this.getMaxHealth() - this.getHealth(), 5, 25);
-                        } else healAmount = player.getInventory().count(AllItems.BRASS_INGOT.asItem());
-                    }
-
-                    this.heal(healAmount);
+                    this.heal(105F);
                     if (!player.isCreative()) {
                         player.getInventory().getStack(
                                 player.getInventory().indexOf(AllItems.BRASS_INGOT.asStack())
-                        ).decrement(healAmount / 5);
+                        ).decrement(1);
                     }
                     if (this.getWorld() instanceof ServerWorld serverWorld) {
                         ItemStackParticleEffect particleEffect = new ItemStackParticleEffect(ParticleTypes.ITEM, AllItems.BRASS_INGOT.asStack());
                         serverWorld.spawnParticles(particleEffect, this.getX(), this.getY() + 0.5, this.getZ(), 10, 0, 0, 0, 0.25);
                     }
                     return false;
-                }
+                } else world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.WRENCH_HIT_FAIL, SoundCategory.PLAYERS, 0.1F, 1F, true);
                 return false;
             }
         }
@@ -269,7 +283,7 @@ public abstract class BuildingBoxEntity extends MobEntity {
                 world.spawnEntity(item);
             }
 
-            ItemEntity item = new ItemEntity(world, this.getX(), this.getY(), this.getZ(), MGItems.BUILDING_BOX.asStack(), new Random().nextFloat(-0.25F, 0.25F), 0.5, new Random().nextFloat(-0.25F, 0.25F));
+            ItemEntity item = new ItemEntity(world, this.getX(), this.getY(), this.getZ(), MGItems.EMPTY_BUILDING_BOX.getDefaultStack(), new Random().nextFloat(-0.25F, 0.25F), 0.5, new Random().nextFloat(-0.25F, 0.25F));
 
             world.spawnEntity(item);
 
@@ -300,5 +314,18 @@ public abstract class BuildingBoxEntity extends MobEntity {
     @Override
     public void onDeath(DamageSource damageSource) {
         this.discard();
+    }
+
+    @Override
+    public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        MutableText infoText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.info");
+        MutableText typeText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.type").append("§e" + this.getBuildingType());
+        MutableText levelText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.level").append("§e" + this.getBuildingLevel());
+
+        CreateLang.builder().add(infoText.copy()).forGoggles(tooltip);
+        CreateLang.builder().add(typeText.copy()).forGoggles(tooltip);
+        CreateLang.builder().add(levelText.copy()).forGoggles(tooltip);
+
+        return true;
     }
 }

@@ -30,7 +30,7 @@ public class MGMessages {
                                 .entryOf(MoreGun.SHOT_DAMAGE));
 
                 if (packetEntity instanceof LivingEntity entity) {
-                    entity.damage(damageSource, 1.5f);
+                    entity.damage(damageSource, 2f);
                     double d = (double) 0.01F * ((double) 1.0F - entity.getAttributeValue(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE));
                     entity.addVelocity(vec3d.x * d, vec3d.y * d, vec3d.z * d);
                 }

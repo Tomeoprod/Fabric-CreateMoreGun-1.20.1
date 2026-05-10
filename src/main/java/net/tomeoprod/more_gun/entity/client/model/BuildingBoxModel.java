@@ -63,6 +63,8 @@ public class BuildingBoxModel<T extends BuildingBoxEntity> extends SinglePartEnt
     public void setAngles(BuildingBoxEntity entity, float limbAngle, float limbDistance, float ageInTicks, float headYaw, float headPitch) {
         this.getPart().traverse().forEach(ModelPart::resetTransform);
 
-        this.updateAnimation(entity.deployAnimationState, BuildingBoxAnimations.BUILDING_BOX_OPEN, ageInTicks, 1);
+		if (entity.getDeployed() > 0) {
+			this.updateAnimation(entity.deployedAnimationState, BuildingBoxAnimations.BUILDING_BOX_OPENED, ageInTicks, 1);
+		} else this.updateAnimation(entity.deployAnimationState, BuildingBoxAnimations.BUILDING_BOX_OPEN, ageInTicks, 1);
     }
 }

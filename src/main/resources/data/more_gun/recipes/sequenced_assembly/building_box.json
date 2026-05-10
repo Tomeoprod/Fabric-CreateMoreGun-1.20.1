@@ -1,0 +1,101 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "more_gun:empty_building_box"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "item": "more_gun:building_box",
+      "nbt": {
+        "more_gun.building_type": "Sentry",
+        "more_gun.building_level": 1
+      }
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "more_gun:building_box"
+        },
+        {
+          "item": "create:brass_block"
+        }
+      ],
+      "results": [
+        {
+          "item": "more_gun:building_box"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "more_gun:building_box"
+        },
+        {
+          "item": "create:precision_mechanism"
+        }
+      ],
+      "results": [
+        {
+          "item": "more_gun:building_box"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "more_gun:building_box"
+        },
+        {
+          "item": "more_gun:australium_ingot"
+        }
+      ],
+      "results": [
+        {
+          "item": "more_gun:building_box"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "more_gun:building_box"
+        },
+        {
+          "item": "create:electron_tube"
+        }
+      ],
+      "results": [
+        {
+          "item": "more_gun:building_box"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "more_gun:building_box"
+        },
+        {
+          "item": "more_gun:steam_engine_module"
+        }
+      ],
+      "results": [
+        {
+          "item": "more_gun:building_box"
+        }
+      ]
+    }
+  ],
+  "transitionalItem": {
+    "item": "more_gun:building_box"
+  }
+}

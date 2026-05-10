@@ -1,6 +1,5 @@
 package net.tomeoprod.more_gun.Item;
 
-import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.item.Item;
@@ -16,6 +15,7 @@ public class MGItems {
     public static final Item AUSTRALIUM_INGOT = registerItem("australium_ingot", new Item(new FabricItemSettings()));
     public static final Item STEAM_ENGINE_MODULE = registerItem("steam_engine_module", new Item(new FabricItemSettings()));
     public static final Item EMPTY_BUILDING_BOX = registerItem("empty_building_box", new Item(new FabricItemSettings().maxCount(1)));
+    public static final Item BULLET = registerItem("bullet", new Item(new FabricItemSettings()));
 
     public static final ItemEntry<BuildingBoxItem> BUILDING_BOX = MoreGun.REGISTRATE.item("building_box", BuildingBoxItem::new)
             .properties(p -> p.maxCount(1))
@@ -25,6 +25,7 @@ public class MGItems {
         return Registry.register(Registries.ITEM, new Identifier(MoreGun.MOD_ID, name), item);
     }
 
+    @SuppressWarnings("EmptyMethod")
     public static void initialize() {
     }
 }

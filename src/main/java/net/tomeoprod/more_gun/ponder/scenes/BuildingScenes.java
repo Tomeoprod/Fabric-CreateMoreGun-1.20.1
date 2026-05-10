@@ -43,12 +43,12 @@ public class BuildingScenes {
 
         scene.idle(80);
 
-        scene.overlay().showText(80).pointAt(util.vector().centerOf(2, 1, 2)).text("You can repair it by hitting it with a wrench and brass ingots in you're inventory").attachKeyFrame();
+        scene.overlay().showText(80).pointAt(util.vector().centerOf(2, 1, 2)).text("You can repair it by hitting it with a wrench and a brass ingot in you're inventory").attachKeyFrame();
         scene.overlay().showControls(util.vector().topOf(2, 1, 2), Pointing.DOWN, 40).leftClick().withItem(AllItems.WRENCH.asStack());
 
         scene.idle(100);
 
-        scene.overlay().showText(80).pointAt(util.vector().centerOf(2, 1, 2)).text("You can pick it up by right clicking it while sneaking with an empty hand").attachKeyFrame();
+        scene.overlay().showText(80).pointAt(util.vector().centerOf(2, 1, 2)).text("You can pick it up by sneaking and right clicking it with an empty hand").attachKeyFrame();
         scene.overlay().showControls(util.vector().topOf(2, 1, 2), Pointing.DOWN, 20).whileSneaking().rightClick();
         scene.world().modifyEntity(sentry, entity1 -> {
             if (entity1 instanceof BuildingBoxEntity buildingBoxEntity) {
