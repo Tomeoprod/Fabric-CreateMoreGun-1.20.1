@@ -7,6 +7,7 @@ import com.simibubi.create.foundation.utility.CreateLang;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -19,22 +20,21 @@ import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.EntitySpawnS2CPacket;
 import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Box;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.Item.MGItems;
@@ -42,6 +42,8 @@ import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.goggles.IHaveEntityGoggleInformation;
 import net.tomeoprod.more_gun.networking.MGMessages;
 import net.tomeoprod.more_gun.sound.MGSounds;
+import net.tomeoprod.more_gun.sound.instances.DeployingSoundInstance;
+import net.tomeoprod.more_gun.util.Image2d;
 import net.tomeoprod.more_gun.util.TF2Utils;
 import org.jetbrains.annotations.Nullable;
 
@@ -53,11 +55,14 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public final AnimationState deployedAnimationState = new AnimationState();
 
     private static final TrackedData<Integer> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<Boolean> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
-    private static final TrackedData<Integer> OWNER_ID = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<String> OWNER_UUID = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final TrackedData<String> OWNER_NAME = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<String> BUILDING_TYPE = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.STRING);
     private static final TrackedData<Integer> BUILDING_LEVEL = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Float> BUILDING_ROTATION = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.FLOAT);
+    private static final TrackedData<Integer> BUILDING_MODE = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
+    private static final TrackedData<Integer> UPGRADE_PROGRESS = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
 
     public BuildingBoxEntity(EntityType<? extends BuildingBoxEntity> buildingBoxEntityEntityType, World world) {
         super(buildingBoxEntityEntityType, world);
@@ -80,57 +85,78 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         super.initDataTracker();
 
         dataTracker.startTracking(DEPLOYED, 0);
-        dataTracker.startTracking(DEPLOYING, false);
-        dataTracker.startTracking(OWNER_ID, 0);
+        dataTracker.startTracking(DEPLOYING, 0);
+        dataTracker.startTracking(OWNER_UUID, "");
+        dataTracker.startTracking(OWNER_NAME, "None");
         dataTracker.startTracking(BUILDING_TYPE, "");
         dataTracker.startTracking(BUILDING_LEVEL, 0);
         dataTracker.startTracking(BUILDING_ROTATION, 0.0f);
+        dataTracker.startTracking(BUILDING_MODE, 0);
+        dataTracker.startTracking(UPGRADE_PROGRESS, 0);
     }
 
     @Override
     public void writeCustomDataToNbt(NbtCompound nbt) {
         nbt.putInt("more_gun.deployed", getDeployed());
-        nbt.putBoolean("more_gun.deploying", getDeploying());
-        nbt.putInt("more_gun.ownerId", getOwnerId());
+        nbt.putInt("more_gun.deploying", getDeploying());
+        nbt.putString("more_gun.ownerUUID", getOwnerId());
+        nbt.putString("more_gun.ownerName", getOwnerName());
         nbt.putString("more_gun.buildingType", getBuildingType());
         nbt.putInt("more_gun.buildingLevel", getBuildingLevel());
         nbt.putFloat("more_gun.buildingRotation", getBuildingRotation());
+        nbt.putInt("more_gun.buildingMode", getBuildingMode());
+        nbt.putInt("more_gun.upgradeProgress", getUpgradeProgress());
     }
 
     @Override
     public void readCustomDataFromNbt(NbtCompound nbt) {
         if (nbt.contains("more_gun.deployed")) setDeployed(nbt.getInt("more_gun.deployed"));
-        if (nbt.contains("more_gun.deploying")) setDeploying(nbt.getBoolean("more_gun.deploying"));
-        if (nbt.contains("more_gun.ownerId")) setOwnerId(nbt.getInt("more_gun.ownerId"));
+        if (nbt.contains("more_gun.deploying")) setDeploying(nbt.getInt("more_gun.deploying"));
+        if (nbt.contains("more_gun.ownerUUID")) setOwnerId(nbt.getString("more_gun.ownerUUID"));
+        if (nbt.contains("more_gun.ownerName")) setOwnerName(nbt.getString("more_gun.ownerName"));
         if (nbt.contains("more_gun.buildingType")) setBuildingType(nbt.getString("more_gun.buildingType"));
         if (nbt.contains("more_gun.buildingLevel")) setBuildingLevel(nbt.getInt("more_gun.buildingLevel"));
         if (nbt.contains("more_gun.buildingRotation")) setBuildingRotation(nbt.getFloat("more_gun.buildingRotation"));
+        if (nbt.contains("more_gun.buildingMode")) setBuildingMode(nbt.getInt("more_gun.buildingMode"));
+        if (nbt.contains("more_gun.upgradeProgress")) setUpgradeProgress(nbt.getInt("more_gun.upgradeProgress"));
     }
 
     public void setDeployed(int deployed) {
         dataTracker.set(DEPLOYED, deployed);
     }
+
     public int getDeployed() {
         return dataTracker.get(DEPLOYED);
     }
 
-    public void setDeploying(boolean deploying) {
+    public void setDeploying(int deploying) {
         dataTracker.set(DEPLOYING, deploying);
     }
-    public boolean getDeploying() {
+
+    public int getDeploying() {
         return dataTracker.get(DEPLOYING);
     }
 
-    public void setOwnerId(int playerId) {
-        dataTracker.set(OWNER_ID, playerId);
-    }
-    public int getOwnerId() {
-        return dataTracker.get(OWNER_ID);
+    public void setOwnerId(String playerId) {
+        dataTracker.set(OWNER_UUID, playerId);
     }
 
-    public void setBuildingType (String type) {
+    public String getOwnerId() {
+        return dataTracker.get(OWNER_UUID);
+    }
+
+    public void setOwnerName(String name) {
+        dataTracker.set(OWNER_NAME, name);
+    }
+
+    public String getOwnerName() {
+        return dataTracker.get(OWNER_NAME);
+    }
+
+    public void setBuildingType(String type) {
         dataTracker.set(BUILDING_TYPE, type);
     }
+
     public String getBuildingType() {
         return dataTracker.get(BUILDING_TYPE);
     }
@@ -138,6 +164,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public void setBuildingLevel(int level) {
         dataTracker.set(BUILDING_LEVEL, level);
     }
+
     public int getBuildingLevel() {
         return dataTracker.get(BUILDING_LEVEL);
     }
@@ -145,9 +172,34 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public void setBuildingRotation(float rotation) {
         dataTracker.set(BUILDING_ROTATION, rotation);
     }
+
     public float getBuildingRotation() {
         return dataTracker.get(BUILDING_ROTATION);
     }
+
+    public void setBuildingMode(int mode) {
+        dataTracker.set(BUILDING_MODE, mode);
+    }
+
+    public int getBuildingMode() {
+        return dataTracker.get(BUILDING_MODE);
+    }
+
+    public void setUpgradeProgress(int progress) {
+        dataTracker.set(UPGRADE_PROGRESS, progress);
+    }
+
+    public int getUpgradeProgress() {
+        return dataTracker.get(UPGRADE_PROGRESS);
+    }
+
+    public abstract Item getUpgradeItem();
+
+    public abstract int getMaxUpgradeProgress();
+
+    public abstract int getMaxBuildingModes();
+
+    public abstract Text getBuildingModeMessage(int mode);
 
     @Override
     public boolean isPushable() {
@@ -165,27 +217,50 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     }
 
     public void setupAnimationStates() {
-        if (this.getDeploying()) {
+        if (this.getDeploying() > this.getDeployed()) {
             if (!this.deployAnimationState.isRunning()) {
-                this.getWorld().playSoundAtBlockCenter(this.getBlockPos(), this.getDeployingSound(), SoundCategory.NEUTRAL, 0.5f, 1f, true);
-                for (int i = 0; i < 25; i++) {
-                    this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
+                if (this.getWorld().isClient) {
+                    MinecraftClient.getInstance().getSoundManager().play(new DeployingSoundInstance(this, this.getDeployingSound()));
+                }
+
+                if (this.getDeploying() == 1) {
+                    for (int i = 0; i < 25; i++) {
+                        this.getWorld().addImportantParticle(ParticleTypes.SPIT, true, this.getX(), this.getY(), this.getZ(), new Random().nextFloat(-0.1f, 0.1f), 0.2, new Random().nextFloat(-0.1f, 0.1f));
+                    }
                 }
             }
             this.deployAnimationState.startIfNotRunning(this.age);
         }
 
-        if (this.deployAnimationState.getTimeRunning() >= 7400 && this.getBuildingLevel() != this.getDeployed()) {
+        if (this.deployAnimationState.getTimeRunning() >= this.getMaxAnimationTime() && this.getDeploying() != this.getDeployed()) {
+            this.deployAnimationState.stop();
+
             this.setDeployed(this.getDeployed() + 1);
-            this.setDeploying(false);
+
+            if (this.getDeployed() != this.getBuildingLevel()) {
+                this.setDeploying(this.getDeploying() + 1);
+                this.deployAnimationState.startIfNotRunning(this.age);
+                if (this.getWorld().isClient) {
+                    MinecraftClient.getInstance().getSoundManager().play(new DeployingSoundInstance(this, this.getDeployingSound()));
+                }
+            } else {
+                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                passedData.writeInt(this.getId());
+                ClientPlayNetworking.send(MGMessages.SPAWN_PARTICLES_PACKET_ID, passedData);
+                MinecraftClient.getInstance().getSoundManager().play(new DeployingSoundInstance(this, MGSounds.BUILDING_DEPLOYING_END));
+            }
+
+            this.updateDataTrackers();
         }
 
         if (this.getDeployed() > 0) {
             this.deployedAnimationState.startIfNotRunning(this.age);
-        }
+        } else this.deployedAnimationState.stop();
     }
 
     abstract public SoundEvent getDeployingSound();
+
+    abstract public int getMaxAnimationTime();
 
     @Override
     public void tick() {
@@ -194,38 +269,61 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         this.setupAnimationStates();
         this.calculateDimensions();
 
+
+        PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+        passedData.writeInt(this.getId());
+
+        if (this.getWorld().isClient) {
+            ClientPlayNetworking.send(MGMessages.TICK_PACKET_ID, passedData);
+        }
+    }
+
+    protected void updateDataTrackers() {
         PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         IntList list = IntList.of(
                 this.getId(),
-                this.getDeploying() ? 1 : 0,
-                this.getDeployed()
+                this.getDeploying(),
+                this.getDeployed(),
+                this.getBuildingMode()
         );
         passedData.writeIntList(list);
 
-        if (this.getWorld().isClient && MGMessages.SET_DATA_TRACKERS_PACKET_ID != null) {
-            ClientPlayNetworking.send(MGMessages.SET_DATA_TRACKERS_PACKET_ID, passedData);
-        }
+        ClientPlayNetworking.send(MGMessages.SET_DATA_TRACKERS_PACKET_ID, passedData);
     }
 
     @Override
     public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
         World world = player.getWorld();
 
-        if (player.isSneaking() && !this.getDeploying()) {
-            ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
-            TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getHealth());
+        if (player.getUuidAsString().equals(this.getOwnerId())) {
+            if (player.isSneaking()) {
+                ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
+                TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel());
 
-            ItemEntity item = new ItemEntity(
-                    world,
-                    this.getX(),
-                    this.getY() + 0.5,
-                    this.getZ(),
-                    stack
-            );
+                ItemEntity item = new ItemEntity(
+                        world,
+                        this.getX(),
+                        this.getY() + 0.5,
+                        this.getZ(),
+                        stack
+                );
 
-            world.spawnEntity(item);
-            this.discard();
-            return ActionResult.SUCCESS;
+                world.spawnEntity(item);
+                this.discard();
+                return ActionResult.SUCCESS;
+
+            } else {
+                int mode = this.getBuildingMode() + 1;
+
+                if (mode > this.getMaxBuildingModes()) {
+                    mode = 0;
+                }
+
+                player.sendMessage(this.getBuildingModeMessage(mode), true);
+
+                this.setBuildingMode(mode);
+                this.updateDataTrackers();
+            }
         }
 
         return ActionResult.PASS;
@@ -241,29 +339,92 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         World world = this.getWorld();
         Entity attacker = source.getAttacker();
 
+        if (this.getDeploying() > this.getDeployed()) {
+            return false;
+        }
+
         if (attacker instanceof PlayerEntity player) {
             if (player.getMainHandStack().getItem() instanceof WrenchItem) {
-                if (!(this.getDeployed() > 0 || this.getDeploying())) {
-                    this.setDeploying(true);
-                    this.getBuildingLevel();
-                    world.playSoundAtBlockCenter(this.getBlockPos(), TF2Utils.getRandomWrenchSound(), SoundCategory.PLAYERS, 0.5F, 1F, true);
+                boolean needsHealth = this.getHealth() != this.getMaxHealth();
+                boolean playerHasBrass = player.getInventory().contains(AllItems.BRASS_INGOT.asStack());
+
+                if (this.getDeployed() == 0 && this.getDeploying() == 0) {
+                    this.setDeploying(1);
+                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ());
+                    this.updateDataTrackers();
                     return false;
 
-                } else if (player.getInventory().contains(AllItems.BRASS_INGOT.asStack()) && this.getHealth() != this.getMaxHealth()) {
-                    world.playSoundAtBlockCenter(this.getBlockPos(), TF2Utils.getRandomWrenchSound(), SoundCategory.PLAYERS, 0.5F, 1F, true);
+                }
 
+                if (this instanceof SentryEntity sentryEntity) {
+                    int maxAmmo = TF2Utils.getMaxAmmo(sentryEntity.getBuildingLevel());
+                    boolean needsAmmo = maxAmmo - sentryEntity.getAmmo() != 0;
+                    boolean playerHasBullets = player.getInventory().contains(MGItems.BULLET.getDefaultStack());
+
+                    if (needsAmmo && playerHasBullets) {
+                        int bullet = MathHelper.clamp(
+                                player.getInventory().count(MGItems.BULLET),
+                                0,
+                                MathHelper.clamp(maxAmmo - sentryEntity.getAmmo(), 0, 40));
+
+                        sentryEntity.setAmmo(sentryEntity.getAmmo() + bullet);
+                        if (!player.isCreative()) {
+                            player.getInventory().remove(stack -> stack.isOf(MGItems.BULLET), bullet, player.playerScreenHandler.getCraftingInput());
+                        }
+
+                        if (!playerHasBrass || !needsHealth) {
+                            TF2Utils.playWrenchSound(world, sentryEntity.getX(), sentryEntity.getY(), sentryEntity.getZ());
+                            return false;
+                        }
+                    }
+                }
+
+                if (playerHasBrass && needsHealth) {
+                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ());
                     this.heal(105F);
+
                     if (!player.isCreative()) {
                         player.getInventory().getStack(
                                 player.getInventory().indexOf(AllItems.BRASS_INGOT.asStack())
                         ).decrement(1);
                     }
+
                     if (this.getWorld() instanceof ServerWorld serverWorld) {
                         ItemStackParticleEffect particleEffect = new ItemStackParticleEffect(ParticleTypes.ITEM, AllItems.BRASS_INGOT.asStack());
                         serverWorld.spawnParticles(particleEffect, this.getX(), this.getY() + 0.5, this.getZ(), 10, 0, 0, 0, 0.25);
                     }
+
                     return false;
-                } else world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.WRENCH_HIT_FAIL, SoundCategory.PLAYERS, 0.1F, 1F, true);
+
+                }
+
+                if (this.getUpgradeItem() != null) {
+                    if (player.getInventory().contains(this.getUpgradeItem().getDefaultStack())) {
+                        if (!player.isCreative()) {
+                            player.getInventory().getStack(
+                                    player.getInventory().indexOf(this.getUpgradeItem().getDefaultStack())
+                            ).decrement(1);
+                        }
+
+                        if (this.getUpgradeProgress() == this.getMaxUpgradeProgress() - 1) {
+                            this.setUpgradeProgress(0);
+                            this.setBuildingLevel(this.getBuildingLevel() + 1);
+                            this.setDeploying(this.getBuildingLevel());
+                            TF2Utils.setMaxHealth(this, this.getBuildingLevel());
+                            this.setHealth(this.getMaxHealth());
+                            this.updateDataTrackers();
+
+                        } else this.setUpgradeProgress(this.getUpgradeProgress() + 1);
+
+                        TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ());
+                        return false;
+                    }
+                }
+
+                TF2Utils.playWrenchFailSound(world, this.getX(), this.getY(), this.getZ());
+                return false;
+
+            } else if (this.getDeployed() == 0) {
                 return false;
             }
         }
@@ -279,8 +440,14 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
                     default ->
                             new ItemEntity(world, this.getX(), this.getY(), this.getZ(), AllItems.BRASS_NUGGET.asStack(), new Random().nextFloat(-0.25F, 0.25F), 0.5, new Random().nextFloat(-0.25F, 0.25F));
                 };
-
                 world.spawnEntity(item);
+            }
+
+            if (this instanceof SentryEntity sentryEntity) {
+                while (sentryEntity.getAmmo() > 0) {
+                    world.spawnEntity(new ItemEntity(world, this.getX(), this.getY(), this.getZ(), MGItems.BULLET.getDefaultStack(), new Random().nextFloat(-0.25F, 0.25F), 0.5, new Random().nextFloat(-0.25F, 0.25F)));
+                    sentryEntity.setAmmo(sentryEntity.getAmmo() - 1);
+                }
             }
 
             ItemEntity item = new ItemEntity(world, this.getX(), this.getY(), this.getZ(), MGItems.EMPTY_BUILDING_BOX.getDefaultStack(), new Random().nextFloat(-0.25F, 0.25F), 0.5, new Random().nextFloat(-0.25F, 0.25F));
@@ -297,12 +464,27 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
 
     @Override
     public boolean hasNoGravity() {
+        return false;
+    }
+
+    @Override
+    public boolean handleFallDamage(float fallDistance, float damageMultiplier, DamageSource damageSource) {
+        return false;
+    }
+
+    @Override
+    public boolean canFreeze() {
+        return false;
+    }
+
+    @Override
+    public boolean cannotDespawn() {
         return true;
     }
 
     @Override
-    public Packet<ClientPlayPacketListener> createSpawnPacket() {
-        return new EntitySpawnS2CPacket(this);
+    protected boolean isImmobile() {
+        return true;
     }
 
     @Override
@@ -319,12 +501,39 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     @Override
     public boolean addToGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
         MutableText infoText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.info");
+        MutableText ownerText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.owner").append("§e" + this.getOwnerName());
         MutableText typeText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.type").append("§e" + this.getBuildingType());
         MutableText levelText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.level").append("§e" + this.getBuildingLevel());
 
         CreateLang.builder().add(infoText.copy()).forGoggles(tooltip);
+        CreateLang.builder().add(ownerText.copy()).forGoggles(tooltip);
         CreateLang.builder().add(typeText.copy()).forGoggles(tooltip);
         CreateLang.builder().add(levelText.copy()).forGoggles(tooltip);
+
+        return true;
+    }
+
+    @Override
+    public boolean addToSecondaryGoggleTooltip(List<Text> tooltip, boolean isPlayerSneaking) {
+        if (this.getBuildingLevel() == 3 || this.getDeployed() == 0 || this.getUpgradeItem() == null) {
+            return false;
+        }
+
+        MutableText upgradeText = Text.translatable(MoreGun.MOD_ID + ".goggles.building.upgrade");
+
+        CreateLang.builder().add(upgradeText.copy()).forGoggles(tooltip);
+        CreateLang.builder().add(this.getUpgradeItem().getName()).forGoggles(tooltip,5);
+
+        return true;
+    }
+
+    @Override
+    public boolean addImageToSecondaryGoggleTooltip(List<Image2d<Item, Vec2f>> images) {
+        if (this.getBuildingLevel() == 3 || this.getDeployed() == 0 || this.getUpgradeItem() == null) {
+            return false;
+        }
+
+        images.add(new Image2d<>(this.getUpgradeItem(), new Vec2f(30f, 5)));
 
         return true;
     }

@@ -23,12 +23,16 @@ public class MGItemGroups {
                 entries.add(MGItems.AUSTRALIUM_INGOT);
                 entries.add(MGItems.AUSTRALIUM_NUGGET);
                 entries.add(MGItems.STEAM_ENGINE_MODULE);
-                entries.add(MGItems.EMPTY_BUILDING_BOX);
                 entries.add(MGItems.BULLET);
+                entries.add(MGItems.EMPTY_BUILDING_BOX);
 
-                ItemStack sentryBox = new ItemStack(MGItems.BUILDING_BOX);
-                TF2Utils.setBuildingItemProperties(sentryBox, "Sentry", 1, TF2Utils.getMaxHealth(1));
-                entries.add(sentryBox);
+                ItemStack sentryLv1Box = MGItems.BUILDING_BOX.getDefaultStack();
+                TF2Utils.setBuildingItemProperties(sentryLv1Box, "Sentry", 1);
+                entries.add(sentryLv1Box);
+
+                ItemStack sentryLv2Box = MGItems.BUILDING_BOX.getDefaultStack();
+                TF2Utils.setBuildingItemProperties(sentryLv2Box, "Sentry", 2);
+                entries.add(sentryLv2Box);
 
                 /*
                 ItemStack dispenserBox = new ItemStack(MGItems.BUILDING_BOX);

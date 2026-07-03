@@ -1,9 +1,11 @@
 package net.tomeoprod.more_gun.entity.custom;
 
-import com.simibubi.create.content.equipment.wrench.WrenchItem;
+import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.utility.CreateLang;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
@@ -12,6 +14,7 @@ import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.mob.HostileEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.PacketByteBuf;
@@ -25,29 +28,26 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.RaycastContext;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.entity.MGEntities;
 import net.tomeoprod.more_gun.networking.MGMessages;
-import net.tomeoprod.more_gun.particle.MGParticles;
 import net.tomeoprod.more_gun.sound.MGSounds;
+import net.tomeoprod.more_gun.sound.instances.SentrySearchSoundInstance;
+import net.tomeoprod.more_gun.util.AngleUtils;
 import net.tomeoprod.more_gun.util.TF2Utils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.Random;
 
 public class SentryEntity extends BuildingBoxEntity {
     public Entity target;
     private boolean hadTarget = false;
     private boolean canShoot = false;
-    private boolean lookingRight = true;
+    public boolean lookingRight = true;
 
     public final AnimationState shootAnimationState = new AnimationState();
 
@@ -88,12 +88,13 @@ public class SentryEntity extends BuildingBoxEntity {
         return switch (this.getDeployed()) {
             case 1 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.2, this.getZ() - 0.5);
 
-            case 2 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.5, this.getZ() - 0.5);
+            case 2 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.3, this.getZ() - 0.5);
 
             case 3 -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 1.8, this.getZ() - 0.5);
 
             default -> new Box(this.getX() + 0.5, this.getY(), this.getZ() + 0.5, this.getX() - 0.5, this.getY() + 0.6, this.getZ() - 0.5);
         };
+
 
     }
 
@@ -112,21 +113,69 @@ public class SentryEntity extends BuildingBoxEntity {
     }
 
     @Override
+    public Item getUpgradeItem() {
+        if (this.getBuildingLevel() == 1) {
+            return switch (this.getUpgradeProgress()) {
+                case 1,3 -> AllBlocks.INDUSTRIAL_IRON_BLOCK.asItem();
+                case 4 -> AllItems.PRECISION_MECHANISM.asItem();
+                default -> AllBlocks.BRASS_BLOCK.asItem();
+            };
+
+        }
+
+        return null;
+    }
+
+    @Override
+    public int getMaxUpgradeProgress() {
+        return switch (this.getBuildingLevel()) {
+            case 1 -> 5;
+            default -> 0;
+        };
+    }
+
+    @Override
+    public int getMaxBuildingModes() {
+        return 3;
+    }
+
+    @Override
+    public Text getBuildingModeMessage(int mode) {
+        MutableText message;
+
+        switch (mode) {
+            case 1 -> message = Text.translatable("more_gun.building_mode.sentry.1");
+            case 2 -> message = Text.translatable("more_gun.building_mode.sentry.2");
+            case 3 -> message = Text.translatable("more_gun.building_mode.sentry.3");
+            default -> message = Text.translatable("more_gun.building_mode.sentry.0");
+        }
+
+        return message;
+    }
+
+    @Override
     public SoundEvent getDeployingSound() {
-        return MGSounds.SENTRY_DEPLOYING;
+        return switch (this.getDeploying()) {
+            case 2 -> MGSounds.SENTRY_DEPLOYING_LV2;
+            default -> MGSounds.SENTRY_DEPLOYING_LV1;
+        };
+    }
+
+    @Override
+    public int getMaxAnimationTime() {
+        int time;
+
+        switch (this.getDeployed()) {
+            case 1 -> time = 1500;
+            default -> time = 7000;
+        }
+
+        return time;
     }
 
     @Override
     protected @Nullable SoundEvent getHurtSound(DamageSource source) {
-        return switch (new Random().nextInt(4)) {
-            case 1 -> MGSounds.SENTRY_HURT_1;
-
-            case 2 -> MGSounds.SENTRY_HURT_2;
-
-            case 3 -> MGSounds.SENTRY_HURT_3;
-
-            default -> MGSounds.SENTRY_HURT_4;
-        };
+        return MGSounds.SENTRY_HURT;
     }
 
     @Override
@@ -138,20 +187,33 @@ public class SentryEntity extends BuildingBoxEntity {
     public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
         World world = player.getWorld();
 
-        if (player.isSneaking()) {
-            ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
-            TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getHealth(), this.getAmmo(), this.getRockets());
+        if (player.getUuidAsString().equals(this.getOwnerId())) {
+            if (player.isSneaking()) {
+                ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
+                TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getAmmo(), this.getRockets());
 
-            ItemEntity item = new ItemEntity(
-                    world,
-                    this.getX(),
-                    this.getY() + 0.5,
-                    this.getZ(),
-                    stack
-            );
+                ItemEntity item = new ItemEntity(
+                        world,
+                        this.getX(),
+                        this.getY() + 0.5,
+                        this.getZ(),
+                        stack
+                );
 
-            world.spawnEntity(item);
-            this.discard();
+                world.spawnEntity(item);
+                this.discard();
+            } else {
+                int mode = this.getBuildingMode() + 1;
+
+                if (mode > this.getMaxBuildingModes()) {
+                    mode = 0;
+                }
+
+                player.sendMessage(this.getBuildingModeMessage(mode), true);
+
+                this.setBuildingMode(mode);
+                this.updateDataTrackers();
+            }
             return ActionResult.SUCCESS;
         }
 
@@ -159,46 +221,19 @@ public class SentryEntity extends BuildingBoxEntity {
     }
 
     @Override
-    public boolean damage(DamageSource source, float amount) {
-        World world = this.getWorld();
-        Entity attacker = source.getAttacker();
-
-        boolean isDeployed = this.getDeployed() > 0;
-
-        if (attacker instanceof PlayerEntity player && isDeployed) {
-            boolean needsAmmo = 150 - this.getAmmo() != 0;
-            boolean hitWithWrench = player.getMainHandStack().getItem() instanceof WrenchItem;
-            boolean playerHasBullets = player.getInventory().contains(MGItems.BULLET.getDefaultStack());
-
-            if (needsAmmo && hitWithWrench && playerHasBullets) {
-                int bullet = MathHelper.clamp(
-                        player.getInventory().count(MGItems.BULLET),
-                        0,
-                        MathHelper.clamp(150 - this.getAmmo(), 0, 40));
-
-                world.playSoundAtBlockCenter(this.getBlockPos(), TF2Utils.getRandomWrenchSound(), SoundCategory.PLAYERS, 0.5F, 1F, true);
-
-                this.setAmmo(this.getAmmo() + bullet);
-                if (!player.isCreative()) {
-                    player.getInventory().remove(stack -> stack.isOf(MGItems.BULLET), bullet, player.playerScreenHandler.getCraftingInput());
-                }
-            }
-        }
-
-        return super.damage(source, amount);
-    }
-
-    @Override
     public void tick() {
         super.tick();
 
-        canShoot = this.age % 5 == 0;
+        if (this.getBuildingLevel() == 1) {
+            canShoot = this.age % 5 == 0;
+        } else canShoot = this.age  % 3 == 0;
 
-        this.calculateRotation();
-
-        if (this.getDeployed() > 0) {
-            this.shootTarget();
-            this.searchTarget();
+        if (this.getBuildingMode() != 3) {
+            this.calculateRotation();
+            if (this.getDeployed() == this.getDeploying() && this.getDeployed() > 0) {
+                this.shootTarget();
+                this.searchTarget();
+            }
         }
     }
 
@@ -212,10 +247,23 @@ public class SentryEntity extends BuildingBoxEntity {
                 this.getY() + 20,
                 this.getZ() + 20
         );
-        List<HostileEntity> potentialTargets = world.getEntitiesByClass(HostileEntity.class, box, LivingEntity::isAlive);
-        HostileEntity closest = null;
+        List<? extends LivingEntity> potentialTargets;
+        switch (this.getBuildingMode()) {
+            case 1 -> potentialTargets = world.getEntitiesByClass(PlayerEntity.class, box, entity -> entity.isAlive() && !entity.getUuidAsString().equals(this.getOwnerId()) && !entity.isCreative());
+            case 2 -> potentialTargets = world.getEntitiesByClass(LivingEntity.class, box, entity -> {
+                boolean isCreative = false;
+                boolean isOwner = false;
+                if (entity instanceof PlayerEntity player) {
+                    isCreative = player.isCreative();
+                    isOwner = entity.getUuidAsString().equals(this.getOwnerId());
+                }
+                return !isOwner && !isCreative && entity.isAlive() && (entity instanceof PlayerEntity || entity instanceof HostileEntity);
+            });
+            default -> potentialTargets = world.getEntitiesByClass(HostileEntity.class, box, LivingEntity::isAlive);
+        }
+        LivingEntity closest = null;
 
-        for (HostileEntity target : potentialTargets) {
+        for (LivingEntity target : potentialTargets) {
             BlockHitResult hitResult = world.raycast(new RaycastContext(this.getEyePos(), target.getBoundingBox().getCenter(), RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
             HitResult.Type hitType = hitResult.getType();
             BlockPos hitPos= hitResult.getBlockPos();
@@ -245,9 +293,7 @@ public class SentryEntity extends BuildingBoxEntity {
     }
 
     public void calculateRotation() {
-        World world = this.getWorld();
-
-        if (this.getDeployed() <= 0) {
+        if (this.getDeployed() != this.getDeploying() || this.getDeployed() == 0) {
             float yaw = this.getBuildingRotation();
 
             this.setYaw(yaw);
@@ -271,116 +317,142 @@ public class SentryEntity extends BuildingBoxEntity {
                     35
             );
 
-            float newYaw = MathHelper.stepTowards(
+            float newYaw = MathHelper.stepUnwrappedAngleTowards(
                     this.getYaw(),
                     targetYaw,
                     11.25F
             );
 
-            this.setYaw(newYaw);
-            this.setHeadYaw(newYaw);
-
-            this.setPitch(MathHelper.stepTowards(
+            float newPitch = MathHelper.stepUnwrappedAngleTowards(
                     this.getPitch(),
                     targetPitch,
                     4.0F
-            ));
+            );
+
+            this.setPitch(newPitch);
+            this.setYaw(newYaw);
+            this.setHeadYaw(newYaw);
+
+
 
         } else {
-            float centerYaw = this.getBuildingRotation();
+            float centerYaw = AngleUtils.getRangedAngle(this.getBuildingRotation());
 
             float targetYaw = lookingRight
                     ? centerYaw + 45F
                     : centerYaw - 45F;
 
-            float newYaw = MathHelper.stepTowards(
-                    this.getYaw(),
-                    targetYaw,
-                    2F
-            );
+            float newYaw;
+            float newPitch;
+            if (this.getYaw() > centerYaw + 45F || this.getYaw() < centerYaw - 45F) {
+                newYaw = MathHelper.stepUnwrappedAngleTowards(
+                        AngleUtils.getRangedAngle(this.getYaw()),
+                        targetYaw,
+                        5.F
+                );
 
+                newPitch = MathHelper.stepUnwrappedAngleTowards(
+                        this.getPitch(),
+                        0,
+                        4.0F
+                );
+            } else {
+                newYaw = MathHelper.stepUnwrappedAngleTowards(
+                        AngleUtils.getRangedAngle(this.getYaw()),
+                        targetYaw,
+                        2F
+                );
+
+                newPitch = MathHelper.stepUnwrappedAngleTowards(
+                        this.getPitch(),
+                        0,
+                        1.0F
+                );
+            }
+
+            this.setPitch(newPitch);
             this.setYaw(newYaw);
             this.setHeadYaw(newYaw);
 
-            this.setPitch(MathHelper.stepTowards(
-                    this.getPitch(),
-                    0,
-                    1.0F
-            ));
-
             if (Math.abs(MathHelper.wrapDegrees(targetYaw - newYaw)) < 0.5F) {
-                world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SEARCH_1, SoundCategory.NEUTRAL, 0.25f, 1f, true);
-                lookingRight = !lookingRight;
+                if (this.getWorld().isClient) {
+                    MinecraftClient.getInstance().getSoundManager().play(new SentrySearchSoundInstance(this, this.lookingRight));
+                }
+                this.lookingRight = !this.lookingRight;
             }
         }
+    }
+
+    @Override
+    protected float getActiveEyeHeight(EntityPose pose, EntityDimensions dimensions) {
+        if (this.getBuildingLevel() >= 2) {
+            return 1.1f;
+        }
+
+        return 0.85f;
     }
 
     public void shootTarget() {
         World world = this.getWorld();
 
-        if (target != null && getDeployed() > 0 && canShoot) {
-            float xzAngle = (float) Math.toRadians(this.getYaw() + 90);
-            float yAngle = (float) Math.toRadians(-this.getPitch());
-            float d = 20;
+        if (target != null && getDeployed() > 0) {
+            if (canShoot) {
+                float d = 20;
 
-            Vec3d start = this.getEyePos();
-            Vec3d end = this.getEyePos().add(d * Math.cos(xzAngle), d * Math.sin(yAngle), d * Math.sin(xzAngle));
+                Vec3d start = this.getEyePos();
+                Vec3d end = this.getEyePos().add(this.getRotationVec(1).multiply(d));
 
-            HitResult blockHit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
+                HitResult blockHit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
 
-            if (blockHit.getType() == HitResult.Type.BLOCK) {
-                end = blockHit.getPos();
-            }
+                if (blockHit.getType() == HitResult.Type.BLOCK) {
+                    end = blockHit.getPos();
+                }
 
-            Box searchBox = this.getBoundingBox()
-                    .stretch(this.getRotationVec(1.0F).multiply(d))
-                    .expand(1.0D);
+                Box searchBox = this.getBoundingBox()
+                        .stretch(this.getRotationVec(1.0F).multiply(d))
+                        .expand(1.0D);
 
-            EntityHitResult entityHit = ProjectileUtil.raycast(
-                    this,
-                    start,
-                    end,
-                    searchBox,
-                    entity ->
-                            !entity.isSpectator()
-                                    && entity.canHit()
-                                    && !(entity instanceof BuildingBoxEntity),
-                    start.squaredDistanceTo(end)
-            );
+                EntityHitResult entityHit = ProjectileUtil.raycast(
+                        this,
+                        start,
+                        end,
+                        searchBox,
+                        entity ->
+                                !entity.isSpectator()
+                                        && entity.canHit()
+                                        && !(entity instanceof BuildingBoxEntity)
+                                        && entity == this.target,
+                        start.squaredDistanceTo(end)
+                );
 
-            if (this.getAmmo() > 0) {
-                if (entityHit != null && entityHit.getType() != HitResult.Type.MISS) {
-                    if (entityHit.getEntity() instanceof LivingEntity entity) {
-                        shootAnimationState.startIfNotRunning(this.age);
-                        Vec3d particleSpawnPos = this.getEyePos().add(this.getRotationVec(1.0F).multiply(0.65));
-                        world.addImportantParticle(
-                                MGParticles.MUZZLE_FLASH_PARTICLE,
-                                particleSpawnPos.x,
-                                particleSpawnPos.y + 0.1,
-                                particleSpawnPos.z,
-                                0,
-                                0,
-                                0
-                        );
-                        world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_1, SoundCategory.NEUTRAL, 0.1f, 1f, true);
+                if (this.getAmmo() > 0) {
+                    if (entityHit != null && entityHit.getType() != HitResult.Type.MISS) {
+                        if (entityHit.getEntity() instanceof LivingEntity entity) {
+                            shootAnimationState.startIfNotRunning(this.age);
+                            TF2Utils.generateMuzzleFlash(world, this);
+                            world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_1, SoundCategory.NEUTRAL, 0.1f, 1f, true);
 
-                        if (entity.canTakeDamage()) {
-                            PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
-                            passedData.writeInt(entity.getId());
-                            passedData.writeVector3f(this.getRotationVec(1.0F).toVector3f());
+                            if (entity.canTakeDamage()) {
+                                PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                                passedData.writeInt(entity.getId());
+                                passedData.writeVector3f(this.getRotationVec(1.0F).toVector3f());
 
-                            if (this.getWorld().isClient && MGMessages.SHOOT_ENTITY_PACKET_ID != null) {
-                                ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                                if (this.getWorld().isClient && MGMessages.SHOOT_ENTITY_PACKET_ID != null) {
+                                    ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                                }
                             }
+                            this.setAmmo(this.getAmmo() - 1);
                         }
                     }
-                }
-                this.setAmmo(this.getAmmo() - 1);
 
-            } else {
+
+                } else {
+                    shootAnimationState.startIfNotRunning(this.age);
+                    world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_EMPTY, SoundCategory.NEUTRAL, 0.25f, 1f, true);
+                }
+            } else if(this.getBuildingLevel() >= 2) {
                 shootAnimationState.startIfNotRunning(this.age);
-                world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_EMPTY, SoundCategory.NEUTRAL, 0.25f, 1f, true);
-            }
+            } else shootAnimationState.stop();
         } else shootAnimationState.stop();
 
     }
@@ -393,22 +465,14 @@ public class SentryEntity extends BuildingBoxEntity {
         float maxHealth = this.getMaxHealth();
 
         int ammo = this.getAmmo();
-        int maxAmmo = 150;
+        int maxAmmo = TF2Utils.getMaxAmmo(this.getBuildingLevel());
 
         int rockets = this.getRockets();
-        int maxRockets = 0;
+        int maxRockets = TF2Utils.getMaxRockets(this.getBuildingLevel());
 
         Formatting healthColor = TF2Utils.getStatColor(health, maxHealth);
         Formatting ammoColor = TF2Utils.getStatColor(ammo, maxAmmo);
         Formatting rocketsColor = TF2Utils.getStatColor(rockets, maxRockets);
-
-        switch (this.getBuildingLevel()) {
-            case 2 -> maxAmmo = 200;
-            case 3 -> {
-                maxAmmo = 200;
-                maxRockets = 20 ;
-            }
-        }
 
         MutableText healthText = Text
                 .translatable(MoreGun.MOD_ID + ".goggles.building.health")

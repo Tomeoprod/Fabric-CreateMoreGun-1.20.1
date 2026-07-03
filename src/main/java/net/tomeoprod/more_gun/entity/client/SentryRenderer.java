@@ -1,8 +1,6 @@
 package net.tomeoprod.more_gun.entity.client;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.*;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.MobEntityRenderer;
 import net.minecraft.client.util.math.MatrixStack;
@@ -13,18 +11,25 @@ import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.MoreGunClient;
 import net.tomeoprod.more_gun.entity.client.model.BuildingBoxModel;
 import net.tomeoprod.more_gun.entity.client.model.Level1SentryModel;
+import net.tomeoprod.more_gun.entity.client.model.Level2SentryModel;
 import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 
 public class SentryRenderer extends MobEntityRenderer<SentryEntity, BuildingBoxModel<SentryEntity>> {
     @SuppressWarnings("rawtypes")
-    private final Level1SentryModel sentryModel;
+    private final Level1SentryModel sentryLv1Model;
+
+    @SuppressWarnings("rawtypes")
+    private final Level2SentryModel sentryLv2Model;
 
     private static final Identifier Level1SentryTexture = Identifier.of(MoreGun.MOD_ID, "textures/entity/sentry_lv1.png");
+    private static final Identifier Level1SentryEyeTexture = Identifier.of(MoreGun.MOD_ID, "textures/entity/sentry_lv1_eye.png");
+    private static final Identifier Level2SentryTexture = Identifier.of(MoreGun.MOD_ID, "textures/entity/sentry_lv2.png");
+    private static final Identifier Level2SentryEyeTexture = Identifier.of(MoreGun.MOD_ID, "textures/entity/sentry_lv2_eye.png");
 
     public SentryRenderer(EntityRendererFactory.Context context) {
         super(context, new BuildingBoxModel<>(context.getPart(MoreGunClient.MODEL_BUILDING_BOX_LAYER)), 0.5f);
-
-        this.sentryModel = new Level1SentryModel<>(context.getPart(MoreGunClient.MODEL_LEVEL_1_SENTRY_LAYER));
+        this.sentryLv1Model = new Level1SentryModel<>(context.getPart(MoreGunClient.MODEL_LEVEL_1_SENTRY_LAYER));
+        this.sentryLv2Model = new Level2SentryModel<>(context.getPart(MoreGunClient.MODEL_LEVEL_2_SENTRY_LAYER));
     }
 
     @Override
@@ -46,17 +51,38 @@ public class SentryRenderer extends MobEntityRenderer<SentryEntity, BuildingBoxM
             this.model.setAngles(mobEntity, 0, 0, l, 0, 0);
             this.model.render(matrices, vertexConsumer, light, p, 1.0F, 1.0F, 1.0F, 1.0F);
 
-            if (mobEntity.getBuildingType().equals("Sentry") && mobEntity.getBuildingLevel() == 1) {
+            if (mobEntity.getBuildingType().equals("Sentry")) {
                 float j = MathHelper.lerpAngleDegrees(g, mobEntity.prevHeadYaw, mobEntity.headYaw);
-                VertexConsumer sentryBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(Level1SentryTexture));
-                this.sentryModel.setAngles(mobEntity, 0, 0, l, j, mobEntity.getPitch());
+                if (mobEntity.getBuildingLevel() >= 1 && mobEntity.getDeployed() <= 1 && mobEntity.getDeploying() == 1) {
+                    VertexConsumer sentryBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(Level1SentryTexture));
+                    this.sentryLv1Model.setAngles(mobEntity, 0, 0, l, j, mobEntity.getPitch());
 
-                if (!(mobEntity.getDeployed() > 0 || mobEntity.deployAnimationState.getTimeRunning() >= 10)) {
-                    matrices.scale(0.2f, 0.2f, 0.2f);
-                    matrices.translate(0f, 5.75f, 0f);
+                    if (!(mobEntity.getDeployed() > 0 || mobEntity.deployAnimationState.getTimeRunning() >= 10)) {
+                        matrices.scale(0.2f, 0.2f, 0.2f);
+                        matrices.translate(0f, 5.75f, 0f);
+                    }
+                    sentryLv1Model.render(matrices, sentryBuffer, light, p, 1f, 1f, 1f, 1f);
+
+                    if (mobEntity.getBuildingMode() != 3) {
+                        VertexConsumer sentryEyeBuffer = vertexConsumers.getBuffer(RenderLayer.getEyes(Level1SentryEyeTexture));
+                        sentryLv1Model.render(matrices, sentryEyeBuffer, LightmapTextureManager.MAX_SKY_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0f, 1.0f, 1.0f, 1.0f);
+
+                    }
                 }
-                sentryModel.render(matrices, sentryBuffer, light, p, 1f, 1f, 1f, 0.8f);
 
+                if (mobEntity.getBuildingLevel() >= 2 && mobEntity.getDeploying() == 2 && mobEntity.getDeployed() >= 1) {
+                    VertexConsumer sentryBuffer = vertexConsumers.getBuffer(RenderLayer.getEntityCutout(Level2SentryTexture));
+
+                    this.sentryLv2Model.setAngles(mobEntity, 0, 0, l, j, mobEntity.getPitch());
+
+                    sentryLv2Model.render(matrices, sentryBuffer, light, p, 1f, 1f, 1f, 1f);
+
+                    if (mobEntity.getBuildingMode() != 3) {
+                        VertexConsumer sentryEyeBuffer = vertexConsumers.getBuffer(RenderLayer.getEyes(Level2SentryEyeTexture));
+                        sentryLv2Model.render(matrices, sentryEyeBuffer, LightmapTextureManager.MAX_SKY_LIGHT_COORDINATE, OverlayTexture.DEFAULT_UV, 1.0f, 1.0f, 1.0f, 1.0f);
+
+                    }
+                }
             }
         }
 

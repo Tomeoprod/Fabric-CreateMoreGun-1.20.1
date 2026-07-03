@@ -8,6 +8,7 @@
     {
       "item": "more_gun:building_box",
       "nbt": {
+        "more_gun.health": 150,
         "more_gun.building_type": "Sentry",
         "more_gun.building_level": 1
       }
@@ -37,7 +38,7 @@
           "item": "more_gun:building_box"
         },
         {
-          "item": "create:precision_mechanism"
+          "item": "create:industrial_iron_block"
         }
       ],
       "results": [
@@ -53,7 +54,7 @@
           "item": "more_gun:building_box"
         },
         {
-          "item": "more_gun:australium_ingot"
+          "item": "create:precision_mechanism"
         }
       ],
       "results": [

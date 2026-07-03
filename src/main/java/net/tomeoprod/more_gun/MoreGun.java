@@ -1,10 +1,5 @@
 package net.tomeoprod.more_gun;
 
-import com.simibubi.create.foundation.data.CreateRegistrate;
-import com.simibubi.create.foundation.item.ItemDescription;
-import com.simibubi.create.foundation.item.KineticStats;
-import com.simibubi.create.foundation.item.TooltipModifier;
-import net.createmod.catnip.lang.FontHelper;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.fabricmc.api.ModInitializer;
 
@@ -28,14 +23,7 @@ public class MoreGun implements ModInitializer {
 	public static final String MOD_ID = "more_gun";
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MoreGun.MOD_ID);
-
     public static final RegistryKey<DamageType> SHOT_DAMAGE = RegistryKey.of(RegistryKeys.DAMAGE_TYPE, Identifier.of(MOD_ID, "shot"));
-
-    static {
-        REGISTRATE.setTooltipModifierFactory(item -> new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
-                .andThen(TooltipModifier.mapNull(KineticStats.create(item))));
-    }
 
 	@Override
 	public void onInitialize() {
@@ -49,7 +37,5 @@ public class MoreGun implements ModInitializer {
         MGOreGeneration.generateOres();
 
         PonderIndex.addPlugin(new MGPonderPlugin());
-
-        REGISTRATE.register();
     }
 }

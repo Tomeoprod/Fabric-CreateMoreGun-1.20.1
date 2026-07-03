@@ -1,8 +1,22 @@
 {
-  "sentry_deploy": {
-    "subtitle": "sound.more_gun.sentry_deploy",
+  "sentry_deploy_lv1": {
+    "subtitle": "sound.more_gun.building_deploy",
     "sounds": [
-      "more_gun:sentry_deploy"
+      "more_gun:sentry_deploy_lv1"
+    ]
+  },
+
+  "sentry_deploy_lv2": {
+    "subtitle": "sound.more_gun.building_deploy",
+    "sounds": [
+      "more_gun:sentry_deploy_lv2"
+    ]
+  },
+
+  "building_deploy_end": {
+    "subtitle": "sound.more_gun.building_deploy_end",
+    "sounds": [
+      "more_gun:building_deploy_end"
     ]
   },
 
@@ -13,30 +27,12 @@
     ]
   },
 
-  "sentry_hurt_1": {
+  "sentry_hurt": {
     "subtitle": "sound.more_gun.sentry_hurt",
     "sounds": [
-      "more_gun:sentry_hurt_1"
-    ]
-  },
-
-  "sentry_hurt_2": {
-    "subtitle": "sound.more_gun.sentry_hurt",
-    "sounds": [
-      "more_gun:sentry_hurt_2"
-    ]
-  },
-
-  "sentry_hurt_3": {
-    "subtitle": "sound.more_gun.sentry_hurt",
-    "sounds": [
-      "more_gun:sentry_hurt_3"
-    ]
-  },
-
-  "sentry_hurt_4": {
-    "subtitle": "sound.more_gun.sentry_hurt",
-    "sounds": [
+      "more_gun:sentry_hurt_1",
+      "more_gun:sentry_hurt_2",
+      "more_gun:sentry_hurt_3",
       "more_gun:sentry_hurt_4"
     ]
   },
@@ -96,40 +92,31 @@
       "more_gun:sentry_search_1"
     ]
   },
-  "wrench_hit_1": {
+  "wrench_hit": {
     "subtitle": "sound.more_gun.wrench_hit",
     "sounds": [
-      "more_gun:wrench_hit_1"
-    ]
-  },
-  "wrench_hit_2": {
-    "subtitle": "sound.more_gun.wrench_hit",
-    "sounds": [
+      "more_gun:wrench_hit_1",
       "more_gun:wrench_hit_2"
     ]
   },
+
   "wrench_hit_fail": {
     "subtitle": "sound.more_gun.wrench_hit_fail",
     "sounds": [
       "more_gun:wrench_hit_fail"
     ]
   },
-  "box_1": {
+
+  "box": {
     "subtitle": "sound.more_gun.box",
     "sounds": [
-      "more_gun:box_1"
-    ]
-  },
-  "box_2": {
-    "subtitle": "sound.more_gun.box",
-    "sounds": [
-      "more_gun:box_2"
-    ]
-  },
-  "box_3": {
-    "subtitle": "sound.more_gun.box",
-    "sounds": [
-      "more_gun:box_3"
+      "more_gun:box_1",
+      "more_gun:box_2",
+      "more_gun:box_3",
+      "more_gun:box_4",
+      "more_gun:box_5",
+      "more_gun:box_6",
+      "more_gun:box_7"
     ]
   }
 }

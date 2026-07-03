@@ -32,14 +32,19 @@ public class BuildingScenes {
         scene.overlay().showText(130).pointAt(util.vector().centerOf(2, 1, 2)).text("Hit it with a Wrench to deploy it").attachKeyFrame();
         scene.overlay().showControls(util.vector().topOf(2, 1, 2), Pointing.DOWN, 40).leftClick().withItem(AllItems.WRENCH.asStack());
         scene.world().modifyEntity(sentry, entity1 -> {
-            if (entity1 instanceof BuildingBoxEntity buildingBoxEntity) {
-                buildingBoxEntity.setDeploying(true);
+            if (entity1 instanceof SentryEntity sentryEntity) {
+                sentryEntity.setDeploying(1);
             }
         });
 
         scene.idle(150);
 
         scene.overlay().showText(60).pointAt(util.vector().centerOf(2, 1, 2)).text("Once deployed, It will scan for targets in a 20 block radius").attachKeyFrame();
+
+        scene.idle(80);
+
+        scene.overlay().showText(60).pointAt(util.vector().centerOf(2, 1, 2)).text("You can right click it to change its targeting mode").attachKeyFrame();
+        scene.overlay().showControls(util.vector().topOf(2, 1, 2), Pointing.DOWN, 40).rightClick();
 
         scene.idle(80);
 
