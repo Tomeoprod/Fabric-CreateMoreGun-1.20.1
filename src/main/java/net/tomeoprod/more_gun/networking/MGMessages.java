@@ -10,6 +10,7 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.MoreGun;
 import net.tomeoprod.more_gun.entity.custom.BuildingBoxEntity;
@@ -65,7 +66,9 @@ public class MGMessages {
         ServerPlayNetworking.registerGlobalReceiver(SPAWN_PARTICLES_PACKET_ID, ((minecraftServer, serverPlayerEntity, serverPlayNetworkHandler, packetByteBuf, packetSender) -> {
             ServerWorld world = serverPlayerEntity.getServerWorld();
             Entity packetEntity = world.getEntityById(packetByteBuf.readInt());
-            world.spawnParticles(ParticleTypes.SPIT, packetEntity.getX(), packetEntity.getY(), packetEntity.getZ(), 50, 0, 0.5, 0, 0.25);
+            if (packetEntity != null){
+                world.spawnParticles(ParticleTypes.SPIT, packetEntity.getX(), packetEntity.getY(), packetEntity.getZ(), 50, 0, 0, 0, 0.1);
+            }
         }));
         
     }

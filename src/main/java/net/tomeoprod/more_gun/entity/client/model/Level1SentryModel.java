@@ -7,6 +7,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.tomeoprod.more_gun.entity.animation.Level1SentryAnimations;
 import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 
+@SuppressWarnings("unused")
 public class Level1SentryModel<T extends SentryEntity> extends SinglePartEntityModel<T> {
 	private final ModelPart sentry;
     private final ModelPart top;
@@ -88,6 +89,7 @@ public class Level1SentryModel<T extends SentryEntity> extends SinglePartEntityM
         } else this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, 12600, 1f);
 
         this.updateAnimation(entity.shootAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SHOOT, ageInTicks, 1);
+        this.updateAnimation(entity.suckAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SUCK, ageInTicks, 0.25f);
     }
 
     private void setHeadAngles(float headYaw, float headPitch, float rotationOffset) {

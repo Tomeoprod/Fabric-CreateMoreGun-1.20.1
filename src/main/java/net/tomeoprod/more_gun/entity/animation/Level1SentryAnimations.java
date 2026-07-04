@@ -119,4 +119,15 @@ public class Level1SentryAnimations {
                         new Keyframe(0.4444F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.CUBIC)
                 ))
                 .build();
+
+        public static final Animation LEVEL_1_SENTRY_SUCK = Animation.Builder.create(0.0833F)
+                .addBoneAnimation("sentry", new Transformation(Transformation.Targets.TRANSLATE,
+                        new Keyframe(0.0F, AnimationHelper.createTranslationalVector(0.0F, 0.0F, 0.0F), Transformation.Interpolations.LINEAR),
+                        new Keyframe(0.0833F, AnimationHelper.createTranslationalVector(0.0F, -16.0F, 0.0F), Transformation.Interpolations.LINEAR)
+                ))
+                .addBoneAnimation("sentry", new Transformation(Transformation.Targets.SCALE,
+                        new Keyframe(0.0F, AnimationHelper.createScalingVector(1.0F, 1.0F, 1.0F), Transformation.Interpolations.LINEAR),
+                        new Keyframe(0.0833F, AnimationHelper.createScalingVector(0.1F, 0.1F, 0.1F), Transformation.Interpolations.LINEAR)
+                ))
+                .build();
 }

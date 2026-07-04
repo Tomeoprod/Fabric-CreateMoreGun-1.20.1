@@ -66,5 +66,7 @@ public class BuildingBoxModel<T extends BuildingBoxEntity> extends SinglePartEnt
 		if (entity.getDeployed() > 0) {
 			this.updateAnimation(entity.deployedAnimationState, BuildingBoxAnimations.BUILDING_BOX_OPENED, ageInTicks, 1);
 		} else this.updateAnimation(entity.deployAnimationState, BuildingBoxAnimations.BUILDING_BOX_OPEN, ageInTicks, 1);
+
+		this.updateAnimation(entity.suckAnimationState, BuildingBoxAnimations.BUILDING_BOX_SUCK, ageInTicks, 0.25f);
     }
 }

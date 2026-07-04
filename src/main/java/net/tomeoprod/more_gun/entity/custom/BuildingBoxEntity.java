@@ -1,13 +1,19 @@
 package net.tomeoprod.more_gun.entity.custom;
 
+import com.mojang.datafixers.TypeRewriteRule;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.equipment.wrench.WrenchItem;
+import com.simibubi.create.content.kinetics.deployer.DeployerFakePlayer;
+import com.simibubi.create.content.logistics.chute.ChuteBlock;
+import com.simibubi.create.content.logistics.chute.ChuteBlockEntity;
 import com.simibubi.create.foundation.utility.CreateLang;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.datafixer.fix.ChunkPalettedStorageFix;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -27,15 +33,13 @@ import net.minecraft.network.PacketByteBuf;
 import net.minecraft.particle.ItemStackParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.*;
 import net.minecraft.world.World;
 import net.tomeoprod.more_gun.Item.MGItems;
 import net.tomeoprod.more_gun.MoreGun;
@@ -53,6 +57,8 @@ import java.util.Random;
 public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntityGoggleInformation {
     public final AnimationState deployAnimationState = new AnimationState();
     public final AnimationState deployedAnimationState = new AnimationState();
+    public final AnimationState suckAnimationState = new AnimationState();
+    private int suckTimer = 0;
 
     private static final TrackedData<Integer> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -276,6 +282,16 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         if (this.getWorld().isClient) {
             ClientPlayNetworking.send(MGMessages.TICK_PACKET_ID, passedData);
         }
+
+        if (this.getWorld().getBlockEntity(this.getSteppingPos()) instanceof ChuteBlockEntity chute) {
+            BlockPos pos = this.getSteppingPos();
+            if (this.getWorld() instanceof ServerWorld serverWorld) {
+                serverWorld.playSound(null, pos.getX(), pos.getY() - 1, pos.getZ(), AllSoundEvents.FWOOMP.getMainEvent(), SoundCategory.BLOCKS, 2f, 1f, 0);
+            }
+            ClientPlayNetworking.send(MGMessages.SPAWN_PARTICLES_PACKET_ID, passedData);
+            chute.setItem(this.getAsItem());
+            this.discard();
+        }
     }
 
     protected void updateDataTrackers() {
@@ -291,25 +307,15 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         ClientPlayNetworking.send(MGMessages.SET_DATA_TRACKERS_PACKET_ID, passedData);
     }
 
+    public abstract ItemStack getAsItem();
+
     @Override
     public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
         World world = player.getWorld();
 
         if (player.getUuidAsString().equals(this.getOwnerId())) {
             if (player.isSneaking()) {
-                ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
-                TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel());
-
-                ItemEntity item = new ItemEntity(
-                        world,
-                        this.getX(),
-                        this.getY() + 0.5,
-                        this.getZ(),
-                        stack
-                );
-
-                world.spawnEntity(item);
-                this.discard();
+                this.putInBox(world);
                 return ActionResult.SUCCESS;
 
             } else {
@@ -329,6 +335,33 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         return ActionResult.PASS;
     }
 
+    public void putInBox(World world) {
+        ItemEntity item = new ItemEntity(
+                world,
+                this.getX(),
+                this.getY() + 0.5,
+                this.getZ(),
+                this.getAsItem()
+        );
+        world.spawnEntity(item);
+        this.discard();
+    }
+
+    public void putInBox(World world, Vec3d velocity) {
+        ItemEntity item = new ItemEntity(
+                world,
+                this.getX(),
+                this.getY() + 0.5,
+                this.getZ(),
+                this.getAsItem(),
+                velocity.getX(),
+                velocity.getY(),
+                velocity.getZ()
+        );
+        world.spawnEntity(item);
+        this.discard();
+    }
+
     @Override
     public boolean canTakeDamage() {
         return true;
@@ -339,7 +372,65 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         World world = this.getWorld();
         Entity attacker = source.getAttacker();
 
-        if (this.getDeploying() > this.getDeployed()) {
+        if (attacker instanceof DeployerFakePlayer deployer) {
+            boolean needsHealth = this.getHealth() != this.getMaxHealth();
+            boolean deployerHasBrass = deployer.getMainHandStack().isOf(AllItems.BRASS_INGOT.asItem());
+
+            if (this.getDeployed() == 0 && this.getDeploying() == 0 && deployer.getMainHandStack().isOf(AllItems.WRENCH.asItem())) {
+                this.setDeploying(1);
+                TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ(), 0.1f);
+                this.updateDataTrackers();
+                return false;
+
+            }
+
+            if (this instanceof SentryEntity sentryEntity) {
+                int maxAmmo = TF2Utils.getMaxAmmo(sentryEntity.getBuildingLevel());
+                boolean needsAmmo = maxAmmo - sentryEntity.getAmmo() != 0;
+                boolean deployerHasBullets = deployer.getMainHandStack().isOf(MGItems.BULLET);
+
+                if (needsAmmo && deployerHasBullets) {
+                    int bullet = MathHelper.clamp(
+                            deployer.getMainHandStack().getCount(),
+                            0,
+                            MathHelper.clamp(maxAmmo - sentryEntity.getAmmo(), 0, 40));
+
+                    sentryEntity.setAmmo(sentryEntity.getAmmo() + bullet);
+
+                    deployer.getMainHandStack().decrement(bullet);
+
+                    if (!deployerHasBrass || !needsHealth) {
+                        TF2Utils.playWrenchSound(world, sentryEntity.getX(), sentryEntity.getY(), sentryEntity.getZ(), 0.1f);
+                        return false;
+                    }
+                }
+            }
+
+            if (deployerHasBrass && needsHealth) {
+                TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ(), 0.1f);
+                this.heal(105F);
+
+                deployer.getMainHandStack().decrement(1);
+
+                if (this.getWorld() instanceof ServerWorld serverWorld) {
+                    ItemStackParticleEffect particleEffect = new ItemStackParticleEffect(ParticleTypes.ITEM, AllItems.BRASS_INGOT.asStack());
+                    serverWorld.spawnParticles(particleEffect, this.getX(), this.getY() + 0.5, this.getZ(), 10, 0, 0, 0, 0.25);
+                }
+
+                return false;
+
+            }
+
+            if (this.getUpgradeItem() != null) {
+                if (deployer.getMainHandStack().isOf(this.getUpgradeItem())) {
+                    deployer.getMainHandStack().decrement(1);
+                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ(), 0.1f);
+                    upgradeBuilding(world);
+                    return false;
+                }
+            }
+
+            TF2Utils.playWrenchFailSound(world, this.getX(), this.getY(), this.getZ(), 0.1f);
             return false;
         }
 
@@ -350,7 +441,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
 
                 if (this.getDeployed() == 0 && this.getDeploying() == 0) {
                     this.setDeploying(1);
-                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ());
+                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ(), 0.5f);
                     this.updateDataTrackers();
                     return false;
 
@@ -373,14 +464,14 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
                         }
 
                         if (!playerHasBrass || !needsHealth) {
-                            TF2Utils.playWrenchSound(world, sentryEntity.getX(), sentryEntity.getY(), sentryEntity.getZ());
+                            TF2Utils.playWrenchSound(world, sentryEntity.getX(), sentryEntity.getY(), sentryEntity.getZ(), 0.5f);
                             return false;
                         }
                     }
                 }
 
                 if (playerHasBrass && needsHealth) {
-                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ());
+                    TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ(), 0.5f);
                     this.heal(105F);
 
                     if (!player.isCreative()) {
@@ -405,23 +496,13 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
                                     player.getInventory().indexOf(this.getUpgradeItem().getDefaultStack())
                             ).decrement(1);
                         }
-
-                        if (this.getUpgradeProgress() == this.getMaxUpgradeProgress() - 1) {
-                            this.setUpgradeProgress(0);
-                            this.setBuildingLevel(this.getBuildingLevel() + 1);
-                            this.setDeploying(this.getBuildingLevel());
-                            TF2Utils.setMaxHealth(this, this.getBuildingLevel());
-                            this.setHealth(this.getMaxHealth());
-                            this.updateDataTrackers();
-
-                        } else this.setUpgradeProgress(this.getUpgradeProgress() + 1);
-
-                        TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ());
+                        TF2Utils.playWrenchSound(world, this.getX(), this.getY(), this.getZ(), 0.5f);
+                        upgradeBuilding(world);
                         return false;
                     }
                 }
 
-                TF2Utils.playWrenchFailSound(world, this.getX(), this.getY(), this.getZ());
+                TF2Utils.playWrenchFailSound(world, this.getX(), this.getY(), this.getZ(), 0.5f);
                 return false;
 
             } else if (this.getDeployed() == 0) {
@@ -460,6 +541,20 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         }
 
         return super.damage(source, amount);
+    }
+
+    public void upgradeBuilding(World world) {
+        if (this.getUpgradeProgress() == this.getMaxUpgradeProgress() - 1) {
+            this.setUpgradeProgress(0);
+            this.setBuildingLevel(this.getBuildingLevel() + 1);
+            if (this.getDeploying() == this.getDeployed()) {
+                this.setDeploying(this.getBuildingLevel());
+            }
+            TF2Utils.setMaxHealth(this, this.getBuildingLevel());
+            this.setHealth(this.getMaxHealth());
+            this.updateDataTrackers();
+
+        } else this.setUpgradeProgress(this.getUpgradeProgress() + 1);
     }
 
     @Override

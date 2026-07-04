@@ -184,40 +184,10 @@ public class SentryEntity extends BuildingBoxEntity {
     }
 
     @Override
-    public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
-        World world = player.getWorld();
-
-        if (player.getUuidAsString().equals(this.getOwnerId())) {
-            if (player.isSneaking()) {
-                ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
-                TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getAmmo(), this.getRockets());
-
-                ItemEntity item = new ItemEntity(
-                        world,
-                        this.getX(),
-                        this.getY() + 0.5,
-                        this.getZ(),
-                        stack
-                );
-
-                world.spawnEntity(item);
-                this.discard();
-            } else {
-                int mode = this.getBuildingMode() + 1;
-
-                if (mode > this.getMaxBuildingModes()) {
-                    mode = 0;
-                }
-
-                player.sendMessage(this.getBuildingModeMessage(mode), true);
-
-                this.setBuildingMode(mode);
-                this.updateDataTrackers();
-            }
-            return ActionResult.SUCCESS;
-        }
-
-        return ActionResult.PASS;
+    public ItemStack getAsItem() {
+        ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
+        TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getAmmo(), this.getRockets());
+        return stack;
     }
 
     @Override

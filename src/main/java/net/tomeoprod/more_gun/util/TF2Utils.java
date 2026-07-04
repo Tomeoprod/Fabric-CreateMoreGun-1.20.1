@@ -174,12 +174,12 @@ public class TF2Utils {
         return 1;
     }
 
-    public static void playWrenchSound(World world, double x, double y, double z) {
-        world.playSound(null, x, y, z, MGSounds.WRENCH_HIT, SoundCategory.PLAYERS, 0.5f, 1f);
+    public static void playWrenchSound(World world, double x, double y, double z, float volume) {
+        world.playSound(null, x, y, z, MGSounds.WRENCH_HIT, SoundCategory.PLAYERS, volume, 1f);
     }
 
-    public static void playWrenchFailSound(World world, double x, double y, double z) {
-        world.playSound(null, x, y, z, MGSounds.WRENCH_HIT_FAIL, SoundCategory.PLAYERS, 0.5f, 1f);
+    public static void playWrenchFailSound(World world, double x, double y, double z, float volume) {
+        world.playSound(null, x, y, z, MGSounds.WRENCH_HIT_FAIL, SoundCategory.PLAYERS, volume, 1f);
     }
 
     public static void PlayBoxSound(World world, double x, double y, double z) {

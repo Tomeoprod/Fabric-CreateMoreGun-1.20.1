@@ -257,6 +257,7 @@ public class Level2SentryModel<T extends SentryEntity> extends SinglePartEntityM
 
 		this.updateAnimation(entity.deployAnimationState, Level2SentryAnimations.LEVEL_2_SENTRY_DEPLOY, ageInTicks, 1f);
 		this.updateAnimation(entity.shootAnimationState, Level2SentryAnimations.LEVEL_2_SENTRY_SHOOT, ageInTicks, 1f);
+		this.updateAnimation(entity.suckAnimationState, Level2SentryAnimations.LEVEL_2_SENTRY_SUCK, ageInTicks, 0.25f);
 	}
 
 	private void setHeadAngles(float headYaw, float headPitch, float rotationOffset) {
