@@ -187,8 +187,15 @@ public class SentryEntity extends BuildingBoxEntity {
 
     @Override
     public ItemStack getAsItem() {
-        ItemStack stack = new ItemStack(MGItems.BUILDING_BOX);
-        TF2Utils.setBuildingItemProperties(stack, this.getBuildingType(), this.getBuildingLevel(), this.getAmmo(), this.getRockets());
+        ItemStack stack;
+
+        switch (this.getBuildingLevel()) {
+            case 2 -> stack = MGItems.LV2_SENTRY_BOX.getDefaultStack();
+            case 3 -> stack = MGItems.LV3_SENTRY_BOX.getDefaultStack();
+            default -> stack = MGItems.LV1_SENTRY_BOX.getDefaultStack();
+        }
+
+        TF2Utils.setSentryItemProperties(stack, this.getAmmo(), this.getRockets());
         return stack;
     }
 
@@ -338,6 +345,31 @@ public class SentryEntity extends BuildingBoxEntity {
             double dx = end.getX() - this.getX();
             double dy = end.getY() - this.getEyeY();
             double dz = end.getZ() - this.getZ();
+
+            start = this.getEyePos();
+
+            blockHit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, owner));
+
+            if (blockHit.getType() == HitResult.Type.BLOCK) {
+                end = blockHit.getPos();
+            }
+
+            entityHit = ProjectileUtil.raycast(
+                    this,
+                    start,
+                    end,
+                    searchBox,
+                    entity ->
+                            !entity.isSpectator()
+                                    && entity.canHit()
+                                    && !(entity instanceof BuildingBoxEntity)
+                                    && !entity.getUuidAsString().equals(this.getOwnerUuid()),
+                    start.squaredDistanceTo(end)
+            );
+
+            if (entityHit != null && entityHit.getType() == HitResult.Type.ENTITY) {
+                end = entityHit.getPos();
+            }
 
             this.aimedBlockPos = end;
 

@@ -1,4 +1,4 @@
-package net.tomeoprod.more_gun.Item.custom;
+package net.tomeoprod.more_gun.Item.custom.building_box_items;
 
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-public class BuildingBoxItem extends Item {
+public abstract class BuildingBoxItem extends Item {
     public BuildingBoxItem(Settings settings) {
         super(settings);
     }
@@ -55,25 +55,25 @@ public class BuildingBoxItem extends Item {
         float health = TF2Utils.getHealth(stack);
         float maxHealth = TF2Utils.getMaxHealth(level);
 
-        int ammo = TF2Utils.getAmmo(stack);
-        int maxAmmo = 150;
-
-        int rocket = TF2Utils.getRocket(stack);
-        int maxRocket = 0;
-
-        switch (level) {
-            case 2 -> maxAmmo = 200;
-            case 3 -> {
-                maxAmmo = 200;
-                maxRocket = 20;
-            }
-        }
-
         if (stack.hasNbt() && level > 0 && !type.isEmpty()) {
             tooltip.add(Text.of("§7Contains : §blv" + level + " " + type));
             tooltip.add(Text.of("§7Health : §b" + health + "§7/" + maxHealth));
 
             if (type.equals("Sentry")) {
+                int ammo = TF2Utils.getAmmo(stack);
+                int maxAmmo = 150;
+
+                int rocket = TF2Utils.getRocket(stack);
+                int maxRocket = 0;
+
+                switch (level) {
+                    case 2 -> maxAmmo = 200;
+                    case 3 -> {
+                        maxAmmo = 200;
+                        maxRocket = 20;
+                    }
+                }
+
                 tooltip.add(Text.of("§7Ammo : §b" + ammo + "§7/" + maxAmmo));
 
                 if (level == 3) {

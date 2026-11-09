@@ -54,8 +54,6 @@ import java.util.Random;
 public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntityGoggleInformation {
     public final AnimationState deployAnimationState = new AnimationState();
     public final AnimationState deployedAnimationState = new AnimationState();
-    public final AnimationState suckAnimationState = new AnimationState();
-    private int suckTimer = 0;
 
     private static final TrackedData<Integer> DEPLOYED = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
     private static final TrackedData<Integer> DEPLOYING = DataTracker.registerData(BuildingBoxEntity.class, TrackedDataHandlerRegistry.INTEGER);
@@ -324,6 +322,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
 
                 this.setBuildingMode(mode);
                 this.updateDataTrackers();
+                return ActionResult.SUCCESS;
             }
         }
 

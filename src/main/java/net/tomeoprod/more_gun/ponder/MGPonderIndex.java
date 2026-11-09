@@ -7,6 +7,10 @@ import net.tomeoprod.more_gun.ponder.scenes.BuildingScenes;
 
 public class MGPonderIndex {
     public static void registerPonders(PonderSceneRegistrationHelper<Identifier> helper) {
-        helper.forComponents(MGItems.BUILDING_BOX_ID).addStoryBoard("buildings", BuildingScenes::sentry);
+        helper.forComponents(
+                MGItems.LV1_SENTRY_BOX_ID,
+                MGItems.LV2_SENTRY_BOX_ID,
+                MGItems.LV3_SENTRY_BOX_ID
+        ).addStoryBoard("buildings", BuildingScenes::sentry);
     }
 }

@@ -103,11 +103,8 @@ public class TF2Utils {
         stack.setNbt(nbtData);
     }
 
-    public static void setBuildingItemProperties(ItemStack stack, String type, int level, int ammo, int rocket) {
+    public static void setSentryItemProperties(ItemStack stack, int ammo, int rocket) {
         NbtCompound nbtData = stack.getOrCreateNbt();
-        nbtData.putString("more_gun.building_type", type);
-        nbtData.putInt("more_gun.building_level", level);
-        nbtData.putFloat("more_gun.health", getMaxHealth(level));
         nbtData.putInt("more_gun.ammo", ammo);
         nbtData.putInt("more_gun.rocket", rocket);
 

@@ -60,7 +60,7 @@ public class BuildingScenes {
                 buildingBoxEntity.discard();
             }
         });
-        scene.world().createItemEntity(util.vector().centerOf(2, 1, 2), util.vector().of(new Random().nextFloat(-0.05f, 0.05f), 0.2, new Random().nextFloat(-0.05f, 0.05f)), MGItems.BUILDING_BOX.asItem().getDefaultStack());
+        scene.world().createItemEntity(util.vector().centerOf(2, 1, 2), util.vector().of(new Random().nextFloat(-0.05f, 0.05f), 0.2, new Random().nextFloat(-0.05f, 0.05f)), MGItems.EMPTY_BUILDING_BOX.asItem().getDefaultStack());
 
         scene.idle(100);
     }

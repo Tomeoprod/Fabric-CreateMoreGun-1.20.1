@@ -6,6 +6,7 @@ import net.minecraft.client.render.entity.model.BipedEntityModel;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.Hand;
 import net.tomeoprod.more_gun.Item.MGItems;
+import net.tomeoprod.more_gun.Item.custom.building_box_items.BuildingBoxItem;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -19,7 +20,7 @@ public class PlayerEntityRendererMixin {
         if (itemStack.isOf(MGItems.WRANGLER)) {
             cir.setReturnValue(BipedEntityModel.ArmPose.BOW_AND_ARROW);
         }
-        if (itemStack.isOf(MGItems.BUILDING_BOX) || itemStack.isOf(MGItems.EMPTY_BUILDING_BOX)) {
+        if (itemStack.getItem() instanceof BuildingBoxItem || itemStack.isOf(MGItems.EMPTY_BUILDING_BOX)) {
             cir.setReturnValue(BipedEntityModel.ArmPose.EMPTY);
         }
     }

@@ -117,9 +117,9 @@ public class SentryRenderer extends MobEntityRenderer<SentryEntity, BuildingBoxM
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(sentry.getYaw()));
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(sentry.getPitch()));
 
-        double dx = target.getX() - sentry.getX();
-        double dy = target.getY() - sentry.getEyeY();
-        double dz = target.getZ() - sentry.getZ();
+        double dx = target.getX() - sentry.getEyePos().getX();
+        double dy = target.getY() - sentry.getEyePos().getY();
+        double dz = target.getZ() - sentry.getEyePos().getZ();
 
         float length = (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
         Matrix4f pose = matrices.peek().getPositionMatrix();
