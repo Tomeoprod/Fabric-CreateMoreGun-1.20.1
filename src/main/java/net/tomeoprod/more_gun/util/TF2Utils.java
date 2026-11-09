@@ -44,7 +44,7 @@ public class TF2Utils {
         }
 
         if (player != null) {
-            entity.setOwnerId(player.getUuidAsString());
+            entity.setOwnerUuid(player.getUuidAsString());
             entity.setOwnerName(player.getName().getString());
             if (player.isSneaking()) {
                 entity.setBuildingRotation(player.getHeadYaw() + 180);
@@ -138,10 +138,7 @@ public class TF2Utils {
     public static int getMaxAmmo(int level) {
         int maxAmmo;
         switch (level) {
-            case 2 -> maxAmmo = 200;
-            case 3 -> {
-                maxAmmo = 200;
-            }
+            case 2, 3 -> maxAmmo = 200;
             default -> maxAmmo = 150;
         }
 
@@ -149,15 +146,7 @@ public class TF2Utils {
     }
 
     public static int getMaxRockets(int level) {
-        int maxRockets;
-        switch (level) {
-            case 3 -> {
-                maxRockets = 20;
-            }
-            default -> maxRockets = 0;
-        }
-
-        return maxRockets;
+        return level == 3 ? 20 : 0;
     }
 
     public static String getBuildingType(ItemStack stack) {
@@ -208,58 +197,50 @@ public class TF2Utils {
         return Formatting.RED;
     }
 
+    public static void generateMuzzleFlash(World world, SentryEntity entity, boolean left) {
+        double sideDistance = 0.4;
+        double frontDistance = 1.1;
+
+        Vec3d front = entity.getRotationVec(1).multiply(frontDistance);
+        Vec3d side = new Vec3d(-front.getZ(), 0, front.getX()).normalize();
+        Vec3d up = front.crossProduct(side).normalize();
+        front = front.add(up.multiply(-0.05));
+        Vec3d sideOffset = front.add(side.multiply(left ? -sideDistance : sideDistance));
+
+        Vec3d ParticleSpawnPos = entity.getEyePos().add(sideOffset);
+
+        world.addImportantParticle(
+                MGParticles.MUZZLE_FLASH_PARTICLE,
+                ParticleSpawnPos.x,
+                ParticleSpawnPos.y,
+                ParticleSpawnPos.z,
+                0,
+                0,
+                0
+        );
+
+    }
+
     public static void generateMuzzleFlash(World world, SentryEntity entity) {
         double sideDistance = 0.1;
         double frontDistance = 0.6;
 
-        if (entity.getBuildingLevel() >= 2) {
-            sideDistance = 0.4;
-            frontDistance = 1.1;
-        }
-
         Vec3d front = entity.getRotationVec(1).multiply(frontDistance);
-        Vec3d side = new Vec3d(-front.getZ(),0,front.getX()).normalize();
+        Vec3d side = new Vec3d(-front.getZ(), 0, front.getX()).normalize();
         Vec3d up = front.crossProduct(side).normalize();
         front = front.add(up.multiply(-0.05));
         Vec3d leftSide = front.add(side.multiply(-sideDistance));
-        Vec3d rightSide = front.add(side.multiply(sideDistance));
 
         Vec3d leftParticleSpawnPos = entity.getEyePos().add(leftSide);
-        Vec3d rightParticleSpawnPos = entity.getEyePos().add(rightSide);
 
-        if (entity.getBuildingLevel() == 1) {
-            world.addImportantParticle(
-                    MGParticles.MUZZLE_FLASH_PARTICLE,
-                    leftParticleSpawnPos.x,
-                    leftParticleSpawnPos.y,
-                    leftParticleSpawnPos.z,
-                    0,
-                    0,
-                    0
-            );
-
-        } else {
-            world.addImportantParticle(
-                    MGParticles.MUZZLE_FLASH_PARTICLE,
-                    leftParticleSpawnPos.x,
-                    leftParticleSpawnPos.y,
-                    leftParticleSpawnPos.z,
-                    0,
-                    0,
-                    0
-            );
-
-            world.addImportantParticle(
-                    MGParticles.MUZZLE_FLASH_PARTICLE,
-                    rightParticleSpawnPos.x,
-                    rightParticleSpawnPos.y,
-                    rightParticleSpawnPos.z,
-                    0,
-                    0,
-                    0
-            );
-
-        }
+        world.addImportantParticle(
+                MGParticles.MUZZLE_FLASH_PARTICLE,
+                leftParticleSpawnPos.x,
+                leftParticleSpawnPos.y,
+                leftParticleSpawnPos.z,
+                0,
+                0,
+                0
+        );
     }
-
 }

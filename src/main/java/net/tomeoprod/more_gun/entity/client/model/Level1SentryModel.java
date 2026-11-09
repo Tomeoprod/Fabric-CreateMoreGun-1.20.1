@@ -7,6 +7,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.tomeoprod.more_gun.entity.animation.Level1SentryAnimations;
 import net.tomeoprod.more_gun.entity.custom.SentryEntity;
 
+//Model recreated by hand from this one:https://sketchfab.com/3d-models/tf2-lvl-1-sentry-minecraft-99b55b71a24f47bca6ecda8f5bd5d8d3
 @SuppressWarnings("unused")
 public class Level1SentryModel<T extends SentryEntity> extends SinglePartEntityModel<T> {
 	private final ModelPart sentry;
@@ -88,8 +89,9 @@ public class Level1SentryModel<T extends SentryEntity> extends SinglePartEntityM
             this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, ageInTicks, 1f);
         } else this.updateAnimation(entity.deployAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_DEPLOY, 12600, 1f);
 
-        this.updateAnimation(entity.shootAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SHOOT, ageInTicks, 1);
-        this.updateAnimation(entity.suckAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SUCK, ageInTicks, 0.25f);
+        if (entity.isWrangled) {
+            this.updateAnimation(entity.shootAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SHOOT, ageInTicks, 1.5f);
+        }else this.updateAnimation(entity.shootAnimationState, Level1SentryAnimations.LEVEL_1_SENTRY_SHOOT, ageInTicks, 1);
     }
 
     private void setHeadAngles(float headYaw, float headPitch, float rotationOffset) {

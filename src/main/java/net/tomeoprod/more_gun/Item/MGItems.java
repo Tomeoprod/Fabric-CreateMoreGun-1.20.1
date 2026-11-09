@@ -6,6 +6,7 @@ import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.tomeoprod.more_gun.Item.custom.BuildingBoxItem;
+import net.tomeoprod.more_gun.Item.custom.WranglerItem;
 import net.tomeoprod.more_gun.MoreGun;
 
 public class MGItems {
@@ -16,6 +17,7 @@ public class MGItems {
     public static final Identifier EMPTY_BUILDING_BOX_ID = Identifier.of(MoreGun.MOD_ID, "empty_building_box");
     public static final Identifier BUILDING_BOX_ID = Identifier.of(MoreGun.MOD_ID, "building_box");
     public static final Identifier BULLET_ID = Identifier.of(MoreGun.MOD_ID, "bullet");
+    public static final Identifier WRANGLER_ID = Identifier.of(MoreGun.MOD_ID, "wrangler");
 
     public static final Item RAW_AUSTRALIUM = registerItem(RAW_AUSTRALIUM_ID, new Item(new FabricItemSettings()));
     public static final Item AUSTRALIUM_NUGGET = registerItem(AUSTRALIUM_NUGGET_ID, new Item(new FabricItemSettings()));
@@ -24,6 +26,7 @@ public class MGItems {
     public static final Item EMPTY_BUILDING_BOX = registerItem(EMPTY_BUILDING_BOX_ID, new Item(new FabricItemSettings().maxCount(1)));
     public static final Item BULLET = registerItem(BULLET_ID, new Item(new FabricItemSettings()));
     public static final Item BUILDING_BOX = registerItem(BUILDING_BOX_ID, new BuildingBoxItem(new FabricItemSettings().maxCount(1)));
+    public static final Item WRANGLER = registerItem(WRANGLER_ID, new WranglerItem(new FabricItemSettings().maxCount(1)));
 
     private static Item registerItem(Identifier id, Item item) {
         return Registry.register(Registries.ITEM, id, item);

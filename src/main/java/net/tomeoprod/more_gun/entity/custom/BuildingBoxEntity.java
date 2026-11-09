@@ -1,19 +1,16 @@
 package net.tomeoprod.more_gun.entity.custom;
 
-import com.mojang.datafixers.TypeRewriteRule;
 import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.equipment.wrench.WrenchItem;
 import com.simibubi.create.content.kinetics.deployer.DeployerFakePlayer;
-import com.simibubi.create.content.logistics.chute.ChuteBlock;
 import com.simibubi.create.content.logistics.chute.ChuteBlockEntity;
 import com.simibubi.create.foundation.utility.CreateLang;
 import io.netty.buffer.Unpooled;
 import it.unimi.dsi.fastutil.ints.IntList;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.datafixer.fix.ChunkPalettedStorageFix;
 import net.minecraft.entity.AnimationState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
@@ -77,7 +74,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public static DefaultAttributeContainer.Builder createBuildingBoxAttributes() {
         return MobEntity.createMobAttributes()
                 .add(EntityAttributes.GENERIC_MAX_HEALTH, 150)
-                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 500);
+                .add(EntityAttributes.GENERIC_KNOCKBACK_RESISTANCE, 1);
     }
 
     @Override
@@ -105,7 +102,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public void writeCustomDataToNbt(NbtCompound nbt) {
         nbt.putInt("more_gun.deployed", getDeployed());
         nbt.putInt("more_gun.deploying", getDeploying());
-        nbt.putString("more_gun.ownerUUID", getOwnerId());
+        nbt.putString("more_gun.ownerUUID", getOwnerUuid());
         nbt.putString("more_gun.ownerName", getOwnerName());
         nbt.putString("more_gun.buildingType", getBuildingType());
         nbt.putInt("more_gun.buildingLevel", getBuildingLevel());
@@ -118,7 +115,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public void readCustomDataFromNbt(NbtCompound nbt) {
         if (nbt.contains("more_gun.deployed")) setDeployed(nbt.getInt("more_gun.deployed"));
         if (nbt.contains("more_gun.deploying")) setDeploying(nbt.getInt("more_gun.deploying"));
-        if (nbt.contains("more_gun.ownerUUID")) setOwnerId(nbt.getString("more_gun.ownerUUID"));
+        if (nbt.contains("more_gun.ownerUUID")) setOwnerUuid(nbt.getString("more_gun.ownerUUID"));
         if (nbt.contains("more_gun.ownerName")) setOwnerName(nbt.getString("more_gun.ownerName"));
         if (nbt.contains("more_gun.buildingType")) setBuildingType(nbt.getString("more_gun.buildingType"));
         if (nbt.contains("more_gun.buildingLevel")) setBuildingLevel(nbt.getInt("more_gun.buildingLevel"));
@@ -143,11 +140,11 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         return dataTracker.get(DEPLOYING);
     }
 
-    public void setOwnerId(String playerId) {
+    public void setOwnerUuid(String playerId) {
         dataTracker.set(OWNER_UUID, playerId);
     }
 
-    public String getOwnerId() {
+    public String getOwnerUuid() {
         return dataTracker.get(OWNER_UUID);
     }
 
@@ -275,10 +272,8 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
         this.setupAnimationStates();
         this.calculateDimensions();
 
-
         PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
         passedData.writeInt(this.getId());
-
         if (this.getWorld().isClient) {
             ClientPlayNetworking.send(MGMessages.TICK_PACKET_ID, passedData);
         }
@@ -313,7 +308,7 @@ public abstract class BuildingBoxEntity extends MobEntity implements IHaveEntity
     public ActionResult interactAt(PlayerEntity player, Vec3d hitPos, Hand hand) {
         World world = player.getWorld();
 
-        if (player.getUuidAsString().equals(this.getOwnerId())) {
+        if (player.getUuidAsString().equals(this.getOwnerUuid())) {
             if (player.isSneaking()) {
                 this.putInBox(world);
                 return ActionResult.SUCCESS;

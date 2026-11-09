@@ -1,0 +1,26 @@
+modLoader = "javafml"
+loaderVersion = "[47,)"
+license = "MIT"
+
+[properties]
+"connector:placeholder"=true
+
+[[mods]]
+modId = "more_gun"
+version = "${file.jarVersion}"
+logoFile = "assets/more_gun/icon.png"
+displayName = "Create:More Gun"
+
+[[dependencies.more_gun]]
+    modId = "connector"
+    mandatory = true
+    versionRange = "[1.0.0,)"
+    ordering = "NONE"
+    side = "BOTH"
+
+[[dependencies.more_gun]]
+    modId="forgified-fabric-api"
+    mandatory = true
+    versionRange = "[0.0.0,)"
+    ordering = "NONE"
+    side = "BOTH"

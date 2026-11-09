@@ -22,9 +22,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Formatting;
-import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -42,12 +40,16 @@ import net.tomeoprod.more_gun.util.TF2Utils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.UUID;
 
 public class SentryEntity extends BuildingBoxEntity {
     public Entity target;
     private boolean hadTarget = false;
     private boolean canShoot = false;
     public boolean lookingRight = true;
+    public boolean isLeftBarrelShooting = true;
+    public boolean isWrangled = false;
+    public Vec3d aimedBlockPos = new Vec3d(0, 0, 0);
 
     public final AnimationState shootAnimationState = new AnimationState();
 
@@ -193,14 +195,33 @@ public class SentryEntity extends BuildingBoxEntity {
     @Override
     public void tick() {
         super.tick();
+        this.isWrangled = false;
+        World world = this.getWorld();
+        PlayerEntity owner = world.getPlayerByUuid(UUID.fromString(this.getOwnerUuid()));
+
+        if (owner != null) {
+            if (owner.getMainHandStack().isOf(MGItems.WRANGLER)) {
+                this.isWrangled = true;
+            }
+        }
 
         if (this.getBuildingLevel() == 1) {
             canShoot = this.age % 5 == 0;
         } else canShoot = this.age  % 3 == 0;
 
+        if (this.isWrangled) {
+            if (this.getBuildingLevel() == 1) {
+                canShoot = this.age % 3 == 0;
+            } else canShoot = this.age  % 2 == 0;
+
+            if (this.getBuildingLevel() > 1) {
+                this.shootAnimationState.startIfNotRunning(this.age);
+            }
+        } else this.shootAnimationState.stop();
+
         if (this.getBuildingMode() != 3) {
             this.calculateRotation();
-            if (this.getDeployed() == this.getDeploying() && this.getDeployed() > 0) {
+            if (this.getDeployed() == this.getDeploying() && this.getDeployed() > 0 && !this.isWrangled) {
                 this.shootTarget();
                 this.searchTarget();
             }
@@ -219,13 +240,13 @@ public class SentryEntity extends BuildingBoxEntity {
         );
         List<? extends LivingEntity> potentialTargets;
         switch (this.getBuildingMode()) {
-            case 1 -> potentialTargets = world.getEntitiesByClass(PlayerEntity.class, box, entity -> entity.isAlive() && !entity.getUuidAsString().equals(this.getOwnerId()) && !entity.isCreative());
+            case 1 -> potentialTargets = world.getEntitiesByClass(PlayerEntity.class, box, entity -> entity.isAlive() && !entity.getUuidAsString().equals(this.getOwnerUuid()) && !entity.isCreative());
             case 2 -> potentialTargets = world.getEntitiesByClass(LivingEntity.class, box, entity -> {
                 boolean isCreative = false;
                 boolean isOwner = false;
                 if (entity instanceof PlayerEntity player) {
                     isCreative = player.isCreative();
-                    isOwner = entity.getUuidAsString().equals(this.getOwnerId());
+                    isOwner = entity.getUuidAsString().equals(this.getOwnerUuid());
                 }
                 return !isOwner && !isCreative && entity.isAlive() && (entity instanceof PlayerEntity || entity instanceof HostileEntity);
             });
@@ -272,7 +293,81 @@ public class SentryEntity extends BuildingBoxEntity {
             return;
         }
 
-        if (target != null) {
+        if (this.isWrangled) {
+            World world = this.getWorld();
+            PlayerEntity owner = world.getPlayerByUuid(UUID.fromString(this.getOwnerUuid()));
+
+            float d = 128;
+
+            Vec3d start = owner.getEyePos();
+            Vec3d end = owner.getEyePos().add(owner.getRotationVec(1).multiply(d));
+
+            HitResult blockHit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, owner));
+
+            if (blockHit.getType() == HitResult.Type.BLOCK) {
+                end = blockHit.getPos();
+            }
+
+            Box searchBox = new Box(
+                    owner.getX() + 1,
+                    owner.getY() + 1,
+                    owner.getZ() + 1,
+                    owner.getX() - 1,
+                    owner.getY() - 1,
+                    owner.getZ() - 1
+            ).stretch(owner.getRotationVec(1.0F).multiply(d))
+                    .expand(1.0D);
+
+            EntityHitResult entityHit = ProjectileUtil.raycast(
+                    this,
+                    start,
+                    end,
+                    searchBox,
+                    entity ->
+                            !entity.isSpectator()
+                            && entity.canHit()
+                            && !(entity instanceof BuildingBoxEntity)
+                            && !entity.getUuidAsString().equals(this.getOwnerUuid()),
+                    start.squaredDistanceTo(end)
+            );
+
+            if (entityHit != null && entityHit.getType() == HitResult.Type.ENTITY) {
+                end = entityHit.getPos();
+            }
+
+            double dx = end.getX() - this.getX();
+            double dy = end.getY() - this.getEyeY();
+            double dz = end.getZ() - this.getZ();
+
+            this.aimedBlockPos = end;
+
+            double horizontalDistance = Math.sqrt(dx * dx + dz * dz);
+
+            float targetYaw = (float) (MathHelper.atan2(dz, dx) * (180F / Math.PI)) - 90F;
+
+            float targetPitch = MathHelper.clamp(
+                    (float) -(MathHelper.atan2(dy, horizontalDistance) * (180F / Math.PI)),
+                    -35,
+                    35
+            );
+
+            float newYaw = MathHelper.stepUnwrappedAngleTowards(
+                    this.getYaw(),
+                    targetYaw,
+                    11.25F
+            );
+
+            float newPitch = MathHelper.stepUnwrappedAngleTowards(
+                    this.getPitch(),
+                    targetPitch,
+                    4.0F
+            );
+
+            this.setPitch(newPitch);
+            this.setYaw(newYaw);
+            this.setHeadYaw(newYaw);
+
+        } else if (target != null) {
             double dx = this.target.getX() - this.getX();
             double dy = this.target.getBoundingBox().getCenter().y - this.getEyeY();
             double dz = this.target.getZ() - this.getZ();
@@ -302,8 +397,6 @@ public class SentryEntity extends BuildingBoxEntity {
             this.setPitch(newPitch);
             this.setYaw(newYaw);
             this.setHeadYaw(newYaw);
-
-
 
         } else {
             float centerYaw = AngleUtils.getRangedAngle(this.getBuildingRotation());
@@ -399,8 +492,11 @@ public class SentryEntity extends BuildingBoxEntity {
                     if (entityHit != null && entityHit.getType() != HitResult.Type.MISS) {
                         if (entityHit.getEntity() instanceof LivingEntity entity) {
                             shootAnimationState.startIfNotRunning(this.age);
-                            TF2Utils.generateMuzzleFlash(world, this);
-                            world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_1, SoundCategory.NEUTRAL, 0.1f, 1f, true);
+                            if (this.getBuildingLevel() > 1) {
+                                TF2Utils.generateMuzzleFlash(world, this, isLeftBarrelShooting);
+                                isLeftBarrelShooting = !isLeftBarrelShooting;
+                            } else TF2Utils.generateMuzzleFlash(world, this);
+                            world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_1, SoundCategory.NEUTRAL, 0.1f, 1f, false);
 
                             if (entity.canTakeDamage()) {
                                 PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
@@ -415,7 +511,6 @@ public class SentryEntity extends BuildingBoxEntity {
                         }
                     }
 
-
                 } else {
                     shootAnimationState.startIfNotRunning(this.age);
                     world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_EMPTY, SoundCategory.NEUTRAL, 0.25f, 1f, true);
@@ -425,6 +520,67 @@ public class SentryEntity extends BuildingBoxEntity {
             } else shootAnimationState.stop();
         } else shootAnimationState.stop();
 
+    }
+
+    public void shootWrangled() {
+        World world = this.getWorld();
+        if (canShoot) {
+            float d = 128;
+
+            Vec3d start = this.getEyePos();
+            Vec3d end = this.getEyePos().add(this.getRotationVec(1).multiply(d));
+
+            HitResult blockHit = world.raycast(new RaycastContext(start, end, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, this));
+
+            if (blockHit.getType() == HitResult.Type.BLOCK) {
+                end = blockHit.getPos();
+            }
+
+            Box searchBox = this.getBoundingBox()
+                    .stretch(this.getRotationVec(1.0F).multiply(d))
+                    .expand(1.0D);
+
+            EntityHitResult entityHit = ProjectileUtil.raycast(
+                    this,
+                    start,
+                    end,
+                    searchBox,
+                    entity ->
+                            !entity.isSpectator()
+                                    && entity.canHit()
+                                    && !(entity instanceof BuildingBoxEntity),
+                    start.squaredDistanceTo(end)
+            );
+
+            if (this.getAmmo() > 0) {
+                shootAnimationState.startIfNotRunning(this.age);
+                if (this.getBuildingLevel() > 1) {
+                    TF2Utils.generateMuzzleFlash(world, this, isLeftBarrelShooting);
+                    isLeftBarrelShooting = !isLeftBarrelShooting;
+                } else TF2Utils.generateMuzzleFlash(world, this);
+                world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_1, SoundCategory.NEUTRAL, 0.1f, 1f, false);
+                this.setAmmo(this.getAmmo() - 1);
+
+                if (entityHit != null && entityHit.getType() != HitResult.Type.MISS) {
+                    if (entityHit.getEntity() instanceof LivingEntity entity) {
+                        if (entity.canTakeDamage()) {
+                            PacketByteBuf passedData = new PacketByteBuf(Unpooled.buffer());
+                            passedData.writeInt(entity.getId());
+                            passedData.writeVector3f(this.getRotationVec(1.0F).toVector3f());
+
+                            if (this.getWorld().isClient && MGMessages.SHOOT_ENTITY_PACKET_ID != null) {
+                                ClientPlayNetworking.send(MGMessages.SHOOT_ENTITY_PACKET_ID, passedData);
+                            }
+                        }
+                    }
+                }
+
+            } else {
+
+                shootAnimationState.startIfNotRunning(this.age);
+                world.playSoundAtBlockCenter(this.getBlockPos(), MGSounds.SENTRY_SHOOT_EMPTY, SoundCategory.NEUTRAL, 0.25f, 1f, false);
+            }
+        }
     }
 
     @Override

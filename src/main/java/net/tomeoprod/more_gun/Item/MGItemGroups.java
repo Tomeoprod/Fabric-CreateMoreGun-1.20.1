@@ -24,6 +24,7 @@ public class MGItemGroups {
                 entries.add(MGItems.AUSTRALIUM_NUGGET);
                 entries.add(MGItems.STEAM_ENGINE_MODULE);
                 entries.add(MGItems.BULLET);
+                entries.add(MGItems.WRANGLER);
                 entries.add(MGItems.EMPTY_BUILDING_BOX);
 
                 ItemStack sentryLv1Box = MGItems.BUILDING_BOX.getDefaultStack();
