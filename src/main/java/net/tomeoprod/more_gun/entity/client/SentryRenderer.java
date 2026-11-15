@@ -111,19 +111,20 @@ public class SentryRenderer extends MobEntityRenderer<SentryEntity, BuildingBoxM
         Vec3d side = new Vec3d(-front.getZ(), 0, front.getX()).normalize();
         Vec3d side2 = front.add(side.multiply(sideOffset));
 
-        matrices.translate(0, upOffset, 0);
-        matrices.translate(side2.getX(), -side2.getY(), -side2.getZ());
+        matrices.translate(side2.getX(), upOffset - side2.getY(), -side2.getZ());
 
         matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(sentry.getYaw()));
         matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(sentry.getPitch()));
 
-        double dx = target.getX() - sentry.getEyePos().getX();
-        double dy = target.getY() - sentry.getEyePos().getY();
-        double dz = target.getZ() - sentry.getEyePos().getZ();
+        Vec3d start = sentry.getPos().add(side2.getX(), upOffset - side2.getY(), -side2.getZ());
+        double dx = target.getX() - start.getX();
+        double dy = target.getY() - start.getX();
+        double dz = target.getZ() - start.getX();
 
         float length = (float)Math.sqrt(dx * dx + dy * dy + dz * dz);
         Matrix4f pose = matrices.peek().getPositionMatrix();
         Matrix3f normal = matrices.peek().getNormalMatrix();
+
         VertexConsumer vcons = vertexConsumers.getBuffer(RenderLayer.getEntityTranslucentCull(Identifier.of(MoreGun.MOD_ID, "textures/entity/color.png")));
         RenderUtils.renderBox(vcons, pose, normal, 255, 50, 0, 150, length, thickness);
         RenderUtils.renderBoxInverted(vcons, pose, normal, 255, 10, 0, 150, length, thickness * 1.5f);
